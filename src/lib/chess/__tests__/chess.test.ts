@@ -135,8 +135,7 @@ afterEach(() => {
 });
 
 async function callImport(username: string) {
-  // createServerFn handler is invoked directly in non-server test contexts.
-  return importChessProfile({ data: { username } });
+  return importChessProfileHandler({ username });
 }
 
 describe("importChessProfile (server)", () => {
