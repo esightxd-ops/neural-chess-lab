@@ -53,6 +53,14 @@ TopBar ──► ChessDataProvider ──► useServerFn(importChessProfile)
             StreaksRecords.tsx       ColorPerformance.tsx     OpponentsTable.tsx
 ```
 
+## Server-only Chess.com access
+
+All Chess.com API calls live in `src/lib/chess/chess.functions.ts` behind a
+`createServerFn` boundary. Components and routes never call `api.chess.com`
+directly — that would trigger browser CORS rejections, prevent the polite
+`User-Agent` header, and leak rate-limit pressure to every visitor. To fetch
+or refresh data, go through `useChessData().importProfile` / `refresh`.
+
 ## Stack
 
 TanStack Start v1 (React 19, SSR-ready), TanStack Query, Tailwind v4, Recharts, Zod, sonner, shadcn/ui.
