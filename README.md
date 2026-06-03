@@ -26,8 +26,9 @@ Before you import anyone, the UI runs on the built-in demo dataset.
 | `src/lib/chess/chess.functions.ts` | `createServerFn` (`importChessProfile`) that calls the Chess.com public API server-side. Fetches the latest **6 months** (max **400 games**) to keep imports bounded for the MVP. |
 | `src/lib/chess/analytics.ts` | Pure functions that turn raw archive games into computed analytics. |
 | `src/lib/chess/mock.ts` | Deterministic demo dataset used as the initial fallback. |
-| `src/lib/chess/store.tsx` | React context (`ChessDataProvider`) exposing `useChessData()`. Handles loading/error states, `localStorage` persistence, and auto-restore on mount. |
-| `src/components/*` | Presentation-only dashboard panels. Every panel reads from `useChessData()`. |
+| `src/lib/chess/store-context.ts` | React context + `useChessData()` hook + shared types. |
+| `src/lib/chess/store.tsx` | `ChessDataProvider` component. Handles loading/error states, `localStorage` persistence, and auto-restore on mount. |
+| `src/components/*` | Dashboard panels — consume `useChessData()` unless explicitly passed props (e.g. `RecentGamesTable` receives `rows`/`profileUsername`). |
 | `src/routes/*` | Overview, Games, Ratings, Openings, Time Controls, Opponents, Streaks, Records, Settings. |
 
 ## Data flow
