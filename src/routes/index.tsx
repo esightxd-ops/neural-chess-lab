@@ -30,7 +30,7 @@ export const Route = createFileRoute("/")({
 
 function Overview() {
   return (
-    <AppShell section="Overview">
+    <AppShell section="Overview" showHeading={false}>
       <ProfileHero />
       <StatTileRow />
       <RatingProgression />

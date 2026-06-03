@@ -66,13 +66,20 @@ export function TopBar({ section, crumb }: Props) {
       <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         <form
           onSubmit={submit}
+          role="search"
+          aria-label="Import Chess.com profile"
           className={cn(
-            "hidden sm:flex items-center gap-2 rounded-md border bg-panel-elevated px-2.5 h-8 w-[280px] transition-colors",
+            "hidden sm:flex items-center gap-2 rounded-md border bg-panel-elevated px-2.5 h-9 w-[280px] transition-colors",
+            "focus-within:ring-2 focus-within:ring-primary/60 focus-within:ring-offset-1 focus-within:ring-offset-background",
             error ? "border-negative/50" : "border-border focus-within:border-primary/40",
           )}
         >
-          <Search className="h-3.5 w-3.5 text-muted-foreground" />
+          <Search className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+          <label htmlFor="chesslab-import" className="sr-only">
+            Chess.com username
+          </label>
           <input
+            id="chesslab-import"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder={username ? username : "chess.com username…"}
@@ -86,31 +93,37 @@ export function TopBar({ section, crumb }: Props) {
             <button
               type="button"
               onClick={clear}
-              title="Clear imported profile"
-              className="text-muted-foreground hover:text-foreground"
+              aria-label="Clear imported profile"
+              className={cn(
+                "text-muted-foreground hover:text-foreground rounded p-1 -m-1",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60",
+              )}
             >
               <X className="h-3 w-3" />
             </button>
           )}
-          <kbd className="font-mono text-[10px] text-muted-foreground border border-border rounded px-1">
+          <kbd className="font-mono text-[10px] text-muted-foreground border border-border rounded px-1" aria-hidden="true">
             ⏎
           </kbd>
         </form>
 
-        <div className="hidden lg:flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
+        <div
+          className="hidden lg:flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-widest text-muted-foreground"
+          aria-live="polite"
+        >
           {error ? (
             <>
-              <AlertCircle className="h-3 w-3 text-negative" />
+              <AlertCircle className="h-3 w-3 text-negative" aria-hidden="true" />
               <span className="text-negative">import error</span>
             </>
           ) : isMock ? (
             <>
-              <span className="h-1.5 w-1.5 rounded-full bg-gold animate-pulse" />
+              <span className="h-1.5 w-1.5 rounded-full bg-gold animate-pulse" aria-hidden="true" />
               demo data
             </>
           ) : (
             <>
-              <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+              <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" aria-hidden="true" />
               synced {formatAgo(fetchedAt)}
               <span className="sr-only">{tick}</span>
             </>
@@ -119,6 +132,13 @@ export function TopBar({ section, crumb }: Props) {
 
         <button
           type="button"
+          aria-label={
+            isLoading
+              ? "Syncing profile"
+              : username
+                ? `Sync ${username} from chess.com`
+                : "Sync (enter a username first)"
+          }
           onClick={() => {
             if (username) {
               void refresh();
@@ -128,9 +148,12 @@ export function TopBar({ section, crumb }: Props) {
             }
           }}
           disabled={isLoading}
-          className="inline-flex items-center gap-1.5 rounded-md border border-border bg-panel-elevated px-3 h-8 text-xs font-mono hover:border-primary/40 hover:text-primary transition-colors disabled:opacity-60"
+          className={cn(
+            "inline-flex items-center gap-1.5 rounded-md border border-border bg-panel-elevated px-3 h-9 text-xs font-mono hover:border-primary/40 hover:text-primary transition-colors disabled:opacity-60",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+          )}
         >
-          <RefreshCw className={cn("h-3 w-3", isLoading && "animate-spin")} />
+          <RefreshCw className={cn("h-3 w-3", isLoading && "animate-spin")} aria-hidden="true" />
           {isLoading ? "Syncing…" : "Sync"}
         </button>
       </div>

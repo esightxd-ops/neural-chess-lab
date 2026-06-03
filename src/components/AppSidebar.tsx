@@ -35,7 +35,7 @@ export function AppSidebar() {
         </div>
       </div>
 
-      <nav className="flex-1 flex flex-col gap-1 px-3 py-3">
+      <nav aria-label="Primary" className="flex-1 flex flex-col gap-1 px-3 py-3">
         {nav.map((item) => {
           const active =
             item.to === "/"
@@ -46,8 +46,10 @@ export function AppSidebar() {
             <Link
               key={item.to}
               to={item.to}
+              aria-current={active ? "page" : undefined}
               className={cn(
                 "group relative flex items-center gap-3 h-10 px-3 rounded-md transition-colors",
+                "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-2 focus-visible:ring-offset-panel",
                 active
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary",

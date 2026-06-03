@@ -86,63 +86,75 @@ export function RecentGamesTable({ rows, limit = 8, showTitle = true, dense = fa
             </tr>
           </thead>
           <tbody className="font-mono">
-            {data.map((g) => (
-              <tr
-                key={g.id}
-                onClick={() => window.open(g.url, "_blank", "noopener")}
-                className="border-b border-border/60 hover:bg-panel-elevated/60 cursor-pointer transition-colors group"
-              >
-                <td className="py-2.5 pr-3">
-                  <span
-                    className={cn(
-                      "inline-flex items-center justify-center w-6 h-6 rounded border text-[11px] font-semibold",
-                      resultColor[g.result],
-                    )}
-                  >
-                    {g.result}
-                  </span>
-                </td>
-                <td className="py-2.5 pr-3">
-                  <div className="flex items-center gap-2 min-w-0">
-                    <div className="h-6 w-6 rounded bg-gradient-to-br from-panel-elevated to-panel border border-border grid place-items-center text-[10px] text-muted-foreground shrink-0">
-                      {g.opponent[0]?.toUpperCase() ?? "?"}
+            {data.map((g) => {
+              const resultLabel =
+                g.result === "W" ? "Won" : g.result === "L" ? "Lost" : "Drew";
+              return (
+                <tr
+                  key={g.id}
+                  className="relative border-b border-border/60 hover:bg-panel-elevated/60 focus-within:bg-panel-elevated/60 transition-colors group"
+                >
+                  <td className="py-2.5 pr-3 relative">
+                    <a
+                      href={g.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`${resultLabel} vs ${g.opponent}, ${formatMode(g)}, ${formatAgo(g.endTime)}. Opens game on chess.com.`}
+                      className="absolute inset-0 z-10 rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-inset"
+                    >
+                      <span className="sr-only">Open game on chess.com</span>
+                    </a>
+                    <span
+                      className={cn(
+                        "inline-flex items-center justify-center w-6 h-6 rounded border text-[11px] font-semibold",
+                        resultColor[g.result],
+                      )}
+                    >
+                      {g.result}
+                    </span>
+                  </td>
+                  <td className="py-2.5 pr-3">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="h-6 w-6 rounded bg-gradient-to-br from-panel-elevated to-panel border border-border grid place-items-center text-[10px] text-muted-foreground shrink-0">
+                        {g.opponent[0]?.toUpperCase() ?? "?"}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-foreground text-xs truncate">{g.opponent}</div>
+                        <div className="text-[10px] text-muted-foreground">{g.opponentRating || "—"}</div>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <div className="text-foreground text-xs truncate">{g.opponent}</div>
-                      <div className="text-[10px] text-muted-foreground">{g.opponentRating || "—"}</div>
-                    </div>
-                  </div>
-                </td>
-                <td className="py-2.5 px-2 text-center">
-                  <Circle
-                    className={cn(
-                      "inline h-3 w-3",
-                      g.playerColor === "white"
-                        ? "fill-foreground text-foreground"
-                        : "fill-background text-foreground",
-                    )}
-                  />
-                </td>
-                <td className="py-2.5 px-2 hidden md:table-cell text-xs text-muted-foreground">
-                  {formatMode(g)}
-                </td>
-                <td className="py-2.5 px-2 hidden lg:table-cell text-xs">
-                  <span className="text-foreground truncate inline-block max-w-[200px] align-middle">
-                    {g.opening}
-                  </span>
-                  {g.eco && <span className="text-muted-foreground ml-1.5">{g.eco}</span>}
-                </td>
-                <td className="py-2.5 px-2 hidden sm:table-cell text-right text-xs text-muted-foreground tabular">
-                  {g.moves || "—"}
-                </td>
-                <td className="py-2.5 pl-2 text-right text-xs text-muted-foreground">
-                  <span className="inline-flex items-center gap-1 group-hover:text-primary transition-colors">
-                    {formatAgo(g.endTime)}
-                    <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </span>
-                </td>
-              </tr>
-            ))}
+                  </td>
+                  <td className="py-2.5 px-2 text-center">
+                    <Circle
+                      className={cn(
+                        "inline h-3 w-3",
+                        g.playerColor === "white"
+                          ? "fill-foreground text-foreground"
+                          : "fill-background text-foreground",
+                      )}
+                    />
+                  </td>
+                  <td className="py-2.5 px-2 hidden md:table-cell text-xs text-muted-foreground">
+                    {formatMode(g)}
+                  </td>
+                  <td className="py-2.5 px-2 hidden lg:table-cell text-xs">
+                    <span className="text-foreground truncate inline-block max-w-[200px] align-middle">
+                      {g.opening}
+                    </span>
+                    {g.eco && <span className="text-muted-foreground ml-1.5">{g.eco}</span>}
+                  </td>
+                  <td className="py-2.5 px-2 hidden sm:table-cell text-right text-xs text-muted-foreground tabular">
+                    {g.moves || "—"}
+                  </td>
+                  <td className="py-2.5 pl-2 text-right text-xs text-muted-foreground">
+                    <span className="inline-flex items-center gap-1 group-hover:text-primary group-focus-within:text-primary transition-colors">
+                      {formatAgo(g.endTime)}
+                      <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity" />
+                    </span>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

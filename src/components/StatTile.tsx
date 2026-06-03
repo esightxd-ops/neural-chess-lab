@@ -51,21 +51,21 @@ export function StatTile({
       </div>
 
       <div className="mt-2 flex items-end justify-between gap-2">
-        <div className="min-w-0">
+        <div className="min-w-0 flex-1">
           <div
-            className="font-mono text-[28px] leading-none font-semibold tabular truncate"
+            className="font-mono text-[22px] sm:text-[26px] lg:text-[28px] leading-none font-semibold tabular"
             style={accent !== "default" ? { color } : undefined}
           >
             {value}
           </div>
           {sub && (
-            <div className="text-[11px] font-mono text-muted-foreground mt-1.5">
+            <div className="text-[11px] font-mono text-muted-foreground mt-1.5 truncate">
               {sub}
             </div>
           )}
         </div>
         {spark && spark.length > 1 && (
-          <div className="h-10 w-[88px] shrink-0 -mb-1">
+          <div className="hidden sm:block h-10 w-[88px] shrink-0 -mb-1">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={spark.map((v, i) => ({ i, v }))}>
                 <defs>
