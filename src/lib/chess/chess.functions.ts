@@ -276,26 +276,33 @@ async function doImport(user: string, displayName: string): Promise<ChessAnalyti
   return { ...analytics, meta };
 }
 
+// Pure handler — extracted so tests can drive it directly without going
+// through the RPC stub that `createServerFn` installs in client/test bundles.
+export async function importChessProfileHandler(input: {
+  username: string;
+}): Promise<ChessAnalytics> {
+  const parsed = UsernameSchema.parse(input.username);
+  const user = parsed.toLowerCase();
+  const cached = cacheGet(user);
+  if (cached) return cached;
+  const existing = inFlight.get(user);
+  if (existing) return existing;
+  const p = (async () => {
+    try {
+      const result = await doImport(user, parsed);
+      cachePut(user, result);
+      return result;
+    } finally {
+      inFlight.delete(user);
+    }
+  })();
+  inFlight.set(user, p);
+  return p;
+}
+
 export const importChessProfile = createServerFn({ method: "POST" })
   .inputValidator(z.object({ username: UsernameSchema }))
-  .handler(async ({ data }): Promise<ChessAnalytics> => {
-    const user = data.username.toLowerCase();
-    const cached = cacheGet(user);
-    if (cached) return cached;
-    const existing = inFlight.get(user);
-    if (existing) return existing;
-    const p = (async () => {
-      try {
-        const result = await doImport(user, data.username);
-        cachePut(user, result);
-        return result;
-      } finally {
-        inFlight.delete(user);
-      }
-    })();
-    inFlight.set(user, p);
-    return p;
-  });
+  .handler(async ({ data }): Promise<ChessAnalytics> => importChessProfileHandler(data));
 
 // Test-only hook: clear caches between unit tests. Not exported from index.
 export function __resetServerCacheForTests() {
