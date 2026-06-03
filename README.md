@@ -4,7 +4,7 @@ Chesslab is a Leetify-style competitive analytics dashboard for **Chess.com** pl
 
 ## What it does
 
-- Fetches a player's public profile, stats, and the last 3 months of game archives from the Chess.com public API via a server-side `createServerFn` (avoids browser CORS and sets a polite `User-Agent`).
+- Fetches a player's public profile, stats, and the latest **6 months** of game archives (capped at **400 games**) from the Chess.com public API via a server-side `createServerFn` (avoids browser CORS and sets a polite `User-Agent`).
 - Normalizes raw PGN data into typed `Game`, `RatingSnapshot`, `OpeningStats`, `OpponentStats`, `ColorStats`, `StreakStats`, and `TimeControlStats`.
 - Computes win rate, current/longest streaks, opening repertoire, frequent opponents, color performance, rating progression curves, and trophy-room records — all client-side from the imported games.
 - Falls back to a deterministic mock dataset on first load so the layout is never empty.
@@ -23,7 +23,7 @@ Before you import anyone, the UI runs on the built-in demo dataset.
 | File | Purpose |
 |------|---------|
 | `src/lib/chess/types.ts` | Normalized domain types (`Game`, `ChessAnalytics`, etc.). |
-| `src/lib/chess/chess.functions.ts` | `createServerFn` (`importChessProfile`) that calls the Chess.com public API server-side. |
+| `src/lib/chess/chess.functions.ts` | `createServerFn` (`importChessProfile`) that calls the Chess.com public API server-side. Fetches the latest **6 months** (max **400 games**) to keep imports bounded for the MVP. |
 | `src/lib/chess/analytics.ts` | Pure functions that turn raw archive games into computed analytics. |
 | `src/lib/chess/mock.ts` | Deterministic demo dataset used as the initial fallback. |
 | `src/lib/chess/store.tsx` | React context (`ChessDataProvider`) exposing `useChessData()`. Handles loading/error states, `localStorage` persistence, and auto-restore on mount. |

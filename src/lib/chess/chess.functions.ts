@@ -89,7 +89,12 @@ const ArchiveMonthSchema = z.object({
   games: z.array(z.unknown()),
 });
 
-const MAX_MONTHS = 3;
+// MVP import guards — prevent unbounded fetches from Chess.com.
+// The free public API returns every archive month; we cap at the latest 6
+// months and 400 games to keep server requests fast and the dashboard
+// responsive. Analytics functions stay pure; bounding happens at the
+// API boundary only.
+const MAX_MONTHS = 6;
 const MAX_GAMES = 400;
 
 export const importChessProfile = createServerFn({ method: "POST" })
