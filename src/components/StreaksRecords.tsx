@@ -15,7 +15,7 @@ interface RecordItem {
   value: string;
   sub?: string;
   icon: LucideIcon;
-  accent: "primary" | "blue" | "gold" | "negative";
+  accent: "primary" | "blue" | "gold" | "negative" | "default";
 }
 
 const records: RecordItem[] = [
@@ -27,7 +27,7 @@ const records: RecordItem[] = [
   { label: "Highest bullet", value: "1634", sub: "Jan 18, 2024", icon: TrendingUp, accent: "blue" },
   { label: "Best day", value: "+68 elo", sub: "9W · 1L · Apr 14", icon: CalendarHeart, accent: "gold" },
   { label: "Most active day", value: "24 games", sub: "Mar 02, 2024", icon: Zap, accent: "blue" },
-  { label: "Longest game", value: "146 moves", sub: "vs deepblue_jr", icon: Clock, accent: "default" as never },
+  { label: "Longest game", value: "146 moves", sub: "vs deepblue_jr", icon: Clock, accent: "default" },
   { label: "Shortest win", value: "11 moves", sub: "vs rookieboss", icon: Zap, accent: "primary" },
 ];
 
