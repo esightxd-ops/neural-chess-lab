@@ -145,13 +145,8 @@ export interface ChessAnalytics {
   meta?: ImportMeta;
 }
 
-export interface ImportResult {
-  ok: true;
-  data: ChessAnalytics;
-}
-export interface ImportError {
-  ok: false;
-  error: string;
-  status?: number;
-}
-export type ImportResponse = ImportResult | ImportError;
+// Canonical import-result type. Re-exported from `store-context.ts` for
+// component consumers. Kept here so non-React modules can import it too.
+export type ImportResult =
+  | { ok: true; username: string }
+  | { ok: false; error: string };
