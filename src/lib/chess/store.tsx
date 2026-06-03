@@ -9,6 +9,17 @@ import type { ChessAnalytics } from "./types";
 const CACHE_TTL_MS = 5 * 60 * 1000;
 const COOLDOWN_MS = 10 * 1000;
 
+const SNAPSHOT_KEY = "chesslab.snapshot.v1";
+const SNAPSHOT_VERSION = 1;
+const SNAPSHOT_TTL_MS = 30 * 60 * 1000;
+
+interface Snapshot {
+  version: number;
+  username: string;
+  savedAt: number;
+  analytics: ChessAnalytics;
+}
+
 const analyticsCache = new Map<string, { data: ChessAnalytics; at: number }>();
 const lastImportAt = new Map<string, number>();
 
@@ -31,6 +42,30 @@ function writeStoredUsername(value: string | null) {
   }
 }
 
+function readSnapshot(): Snapshot | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(SNAPSHOT_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Snapshot;
+    if (parsed?.version !== SNAPSHOT_VERSION) return null;
+    if (!parsed.analytics || !parsed.username) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function writeSnapshot(snap: Snapshot | null) {
+  if (typeof window === "undefined") return;
+  try {
+    if (snap) window.localStorage.setItem(SNAPSHOT_KEY, JSON.stringify(snap));
+    else window.localStorage.removeItem(SNAPSHOT_KEY);
+  } catch {
+    /* ignore — quota or serialization failure is non-fatal */
+  }
+}
+
 export function ChessDataProvider({ children }: { children: ReactNode }) {
   const mock = useMemo(() => getMockAnalytics(), []);
   const [analytics, setAnalytics] = useState(mock);
@@ -44,12 +79,20 @@ export function ChessDataProvider({ children }: { children: ReactNode }) {
   const lastReqId = useRef(0);
   const inFlight = useRef(false);
 
-  const applyAnalytics = useCallback((data: ChessAnalytics) => {
+  const applyAnalytics = useCallback((data: ChessAnalytics, persist: boolean = true) => {
     setAnalytics(data);
     setIsMock(false);
     setUsername(data.profile.username);
     setFetchedAt(data.fetchedAt);
     writeStoredUsername(data.profile.username);
+    if (persist) {
+      writeSnapshot({
+        version: SNAPSHOT_VERSION,
+        username: data.profile.username,
+        savedAt: Date.now(),
+        analytics: data,
+      });
+    }
     if (data.meta) {
       const { failedArchiveMonths, skippedInvalidGames } = data.meta;
       if (failedArchiveMonths > 0 || skippedInvalidGames > 0) {
@@ -102,9 +145,11 @@ export function ChessDataProvider({ children }: { children: ReactNode }) {
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Failed to import profile";
         if (reqId === lastReqId.current) setError(msg);
-        // Clear stored username only for definitive validation/not-found errors.
         const isTerminal = /not found|Invalid Chess\.com username/i.test(msg);
-        if (isTerminal) writeStoredUsername(null);
+        if (isTerminal) {
+          writeStoredUsername(null);
+          writeSnapshot(null);
+        }
         return { ok: false, error: msg };
       } finally {
         inFlight.current = false;
@@ -127,11 +172,22 @@ export function ChessDataProvider({ children }: { children: ReactNode }) {
     setFetchedAt(mock.fetchedAt);
     setError(null);
     writeStoredUsername(null);
+    writeSnapshot(null);
   }, [mock]);
 
   useEffect(() => {
+    // Restore a fresh snapshot synchronously-ish for an instant warm start.
+    const snap = readSnapshot();
+    if (snap && Date.now() - snap.savedAt < SNAPSHOT_TTL_MS) {
+      applyAnalytics(snap.analytics, false);
+      return;
+    }
+    // Stale or missing snapshot: fall back to username-driven auto-import.
     const stored = readStoredUsername();
-    if (stored) void runImport(stored);
+    if (stored) {
+      // Silent auto-restore: don't toast on failure, keep mock dashboard.
+      void runImport(stored);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
