@@ -6,6 +6,8 @@ import { PerformanceRatingsCard } from "@/components/PerformanceRatingsCard";
 import { LastMatchCard } from "@/components/LastMatchCard";
 import { WeaknessCard } from "@/components/WeaknessCard";
 import { RatingTrendCard } from "@/components/RatingTrendCard";
+import { PlayerArchetypeCard } from "@/components/PlayerArchetypeCard";
+import { NarrativeFeedCard } from "@/components/NarrativeFeedCard";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -59,13 +61,15 @@ function Dashboard() {
                 <div className="lg:col-span-3">
                   <SkillRadarCard />
                 </div>
-                <div className="lg:col-span-2">
-                  <RatingTrendCard />
+                <div className="lg:col-span-2 space-y-5">
+                  <PlayerArchetypeCard />
                 </div>
               </div>
+              <RatingTrendCard />
               <LastMatchCard />
             </div>
             <div className="space-y-5">
+              <NarrativeFeedCard />
               <PerformanceRatingsCard />
               <WeaknessCard />
             </div>
