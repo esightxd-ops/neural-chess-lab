@@ -1,9 +1,7 @@
 import { createContext, useContext } from "react";
 import type { ChessAnalytics } from "./types";
 
-export type ImportResult =
-  | { ok: true; username: string }
-  | { ok: false; error: string };
+export type ImportResult = { ok: true; username: string } | { ok: false; error: string };
 
 export interface ChessDataState {
   analytics: ChessAnalytics;

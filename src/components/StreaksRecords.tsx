@@ -85,7 +85,8 @@ export function StreaksRecords({ title = "Streaks & Records", compact = false }:
         })}
         {compact && (
           <div className="panel-elevated p-4 flex items-center justify-center text-[10px] font-mono uppercase tracking-widest text-muted-foreground hover:text-primary cursor-default">
-            <CalendarHeart className="h-3 w-3 mr-1" /> + {analytics.records.length - items.length} more
+            <CalendarHeart className="h-3 w-3 mr-1" /> + {analytics.records.length - items.length}{" "}
+            more
           </div>
         )}
       </div>

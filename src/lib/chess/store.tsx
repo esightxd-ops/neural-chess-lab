@@ -1,20 +1,8 @@
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { getMockAnalytics } from "./mock";
 import { importChessProfile } from "./chess.functions";
-import {
-  ChessContext,
-  STORAGE_KEY,
-  type ChessDataState,
-  type ImportResult,
-} from "./store-context";
+import { ChessContext, STORAGE_KEY, type ChessDataState, type ImportResult } from "./store-context";
 
 function readStoredUsername(): string | null {
   if (typeof window === "undefined") return null;
@@ -112,4 +100,3 @@ export function ChessDataProvider({ children }: { children: ReactNode }) {
 
   return <ChessContext.Provider value={value}>{children}</ChessContext.Provider>;
 }
-
