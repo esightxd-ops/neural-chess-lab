@@ -113,7 +113,3 @@ export function ChessDataProvider({ children }: { children: ReactNode }) {
   return <ChessContext.Provider value={value}>{children}</ChessContext.Provider>;
 }
 
-// Re-export hook for backward-compatible imports. Consumers may also import
-// from "./store-context" directly.
-export { useChessData };
-export type { ImportResult, ChessDataState };
