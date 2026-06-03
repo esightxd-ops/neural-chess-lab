@@ -18,9 +18,9 @@ const ORDER: TimeClass[] = ["bullet", "blitz", "rapid", "daily"];
 
 export function TimeControlGrid() {
   const { analytics } = useChessData();
-  const stats = ORDER.map((tc) => analytics.byTimeClass[tc]).filter(Boolean) as NonNullable<
-    ReturnType<typeof analytics.byTimeClass[TimeClass]>
-  >[];
+  const stats: TimeControlStats[] = ORDER.map((tc) => analytics.byTimeClass[tc]).filter(
+    (s): s is TimeControlStats => Boolean(s),
+  );
 
   return (
     <section className="panel p-5">
