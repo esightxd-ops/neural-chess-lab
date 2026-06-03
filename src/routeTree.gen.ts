@@ -9,8 +9,56 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TimeControlsRouteImport } from './routes/time-controls'
+import { Route as StreaksRouteImport } from './routes/streaks'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as RecordsRouteImport } from './routes/records'
+import { Route as RatingsRouteImport } from './routes/ratings'
+import { Route as OpponentsRouteImport } from './routes/opponents'
+import { Route as OpeningsRouteImport } from './routes/openings'
+import { Route as GamesRouteImport } from './routes/games'
 import { Route as IndexRouteImport } from './routes/index'
 
+const TimeControlsRoute = TimeControlsRouteImport.update({
+  id: '/time-controls',
+  path: '/time-controls',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StreaksRoute = StreaksRouteImport.update({
+  id: '/streaks',
+  path: '/streaks',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecordsRoute = RecordsRouteImport.update({
+  id: '/records',
+  path: '/records',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RatingsRoute = RatingsRouteImport.update({
+  id: '/ratings',
+  path: '/ratings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OpponentsRoute = OpponentsRouteImport.update({
+  id: '/opponents',
+  path: '/opponents',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OpeningsRoute = OpeningsRouteImport.update({
+  id: '/openings',
+  path: '/openings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GamesRoute = GamesRouteImport.update({
+  id: '/games',
+  path: '/games',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -19,28 +67,144 @@ const IndexRoute = IndexRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/games': typeof GamesRoute
+  '/openings': typeof OpeningsRoute
+  '/opponents': typeof OpponentsRoute
+  '/ratings': typeof RatingsRoute
+  '/records': typeof RecordsRoute
+  '/settings': typeof SettingsRoute
+  '/streaks': typeof StreaksRoute
+  '/time-controls': typeof TimeControlsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/games': typeof GamesRoute
+  '/openings': typeof OpeningsRoute
+  '/opponents': typeof OpponentsRoute
+  '/ratings': typeof RatingsRoute
+  '/records': typeof RecordsRoute
+  '/settings': typeof SettingsRoute
+  '/streaks': typeof StreaksRoute
+  '/time-controls': typeof TimeControlsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/games': typeof GamesRoute
+  '/openings': typeof OpeningsRoute
+  '/opponents': typeof OpponentsRoute
+  '/ratings': typeof RatingsRoute
+  '/records': typeof RecordsRoute
+  '/settings': typeof SettingsRoute
+  '/streaks': typeof StreaksRoute
+  '/time-controls': typeof TimeControlsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/games'
+    | '/openings'
+    | '/opponents'
+    | '/ratings'
+    | '/records'
+    | '/settings'
+    | '/streaks'
+    | '/time-controls'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/games'
+    | '/openings'
+    | '/opponents'
+    | '/ratings'
+    | '/records'
+    | '/settings'
+    | '/streaks'
+    | '/time-controls'
+  id:
+    | '__root__'
+    | '/'
+    | '/games'
+    | '/openings'
+    | '/opponents'
+    | '/ratings'
+    | '/records'
+    | '/settings'
+    | '/streaks'
+    | '/time-controls'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  GamesRoute: typeof GamesRoute
+  OpeningsRoute: typeof OpeningsRoute
+  OpponentsRoute: typeof OpponentsRoute
+  RatingsRoute: typeof RatingsRoute
+  RecordsRoute: typeof RecordsRoute
+  SettingsRoute: typeof SettingsRoute
+  StreaksRoute: typeof StreaksRoute
+  TimeControlsRoute: typeof TimeControlsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/time-controls': {
+      id: '/time-controls'
+      path: '/time-controls'
+      fullPath: '/time-controls'
+      preLoaderRoute: typeof TimeControlsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/streaks': {
+      id: '/streaks'
+      path: '/streaks'
+      fullPath: '/streaks'
+      preLoaderRoute: typeof StreaksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/records': {
+      id: '/records'
+      path: '/records'
+      fullPath: '/records'
+      preLoaderRoute: typeof RecordsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ratings': {
+      id: '/ratings'
+      path: '/ratings'
+      fullPath: '/ratings'
+      preLoaderRoute: typeof RatingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/opponents': {
+      id: '/opponents'
+      path: '/opponents'
+      fullPath: '/opponents'
+      preLoaderRoute: typeof OpponentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/openings': {
+      id: '/openings'
+      path: '/openings'
+      fullPath: '/openings'
+      preLoaderRoute: typeof OpeningsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/games': {
+      id: '/games'
+      path: '/games'
+      fullPath: '/games'
+      preLoaderRoute: typeof GamesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -53,6 +217,14 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  GamesRoute: GamesRoute,
+  OpeningsRoute: OpeningsRoute,
+  OpponentsRoute: OpponentsRoute,
+  RatingsRoute: RatingsRoute,
+  RecordsRoute: RecordsRoute,
+  SettingsRoute: SettingsRoute,
+  StreaksRoute: StreaksRoute,
+  TimeControlsRoute: TimeControlsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

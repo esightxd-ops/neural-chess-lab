@@ -87,11 +87,7 @@ function DeltaChart({
               contentStyle={{ background: "var(--color-panel-elevated)", border: "1px solid var(--color-border)", borderRadius: 8, fontSize: 12, fontFamily: "var(--font-mono)" }}
               cursor={{ fill: "var(--color-muted)", opacity: 0.4 }}
             />
-            <Bar dataKey="delta" radius={[3, 3, 0, 0]}>
-              {data.map((d, i) => (
-                <cell key={i} />
-              ))}
-            </Bar>
+            <Bar dataKey="delta" radius={[3, 3, 0, 0]} fill="var(--color-primary)" />
           </BarChart>
         </ResponsiveContainer>
       </div>
