@@ -12,7 +12,6 @@ import { importChessProfile } from "./chess.functions";
 import {
   ChessContext,
   STORAGE_KEY,
-  useChessData,
   type ChessDataState,
   type ImportResult,
 } from "./store-context";
