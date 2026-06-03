@@ -143,16 +143,7 @@ const ArchiveMonthSchema = z.object({
 });
 
 export const importChessProfile = createServerFn({ method: "POST" })
-  .inputValidator(
-    z.object({
-      username: z
-        .string()
-        .trim()
-        .min(2)
-        .max(40)
-        .regex(/^[a-zA-Z0-9_-]+$/, "Invalid Chess.com username"),
-    }),
-  )
+  .inputValidator(z.object({ username: UsernameSchema }))
   .handler(async ({ data }): Promise<ChessAnalytics> => {
     const user = data.username.toLowerCase();
     const base = `https://api.chess.com/pub/player/${encodeURIComponent(user)}`;
