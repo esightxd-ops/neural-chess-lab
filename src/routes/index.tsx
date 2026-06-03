@@ -8,6 +8,7 @@ import { RecentGamesTable } from "@/components/RecentGamesTable";
 import { OpeningTable } from "@/components/OpeningTable";
 import { ColorPerformance } from "@/components/ColorPerformance";
 import { StreaksRecords } from "@/components/StreaksRecords";
+import { useChessData } from "@/lib/chess/store";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -29,6 +30,7 @@ export const Route = createFileRoute("/")({
 });
 
 function Overview() {
+  const { analytics } = useChessData();
   return (
     <AppShell section="Overview" showHeading={false}>
       <ProfileHero />
@@ -37,7 +39,10 @@ function Overview() {
       <TimeControlGrid />
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
         <div className="xl:col-span-2">
-          <RecentGamesTable />
+          <RecentGamesTable
+            rows={analytics.games}
+            profileUsername={analytics.profile.username}
+          />
         </div>
         <OpeningTable />
       </div>
