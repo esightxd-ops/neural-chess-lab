@@ -120,6 +120,14 @@ export function TopBar({ section, crumb }: Props) {
               <AlertCircle className="h-3 w-3 text-negative" aria-hidden="true" />
               <span className="text-negative">import error</span>
             </>
+          ) : isLoading && isMock ? (
+            <>
+              <span
+                className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse"
+                aria-hidden="true"
+              />
+              importing…
+            </>
           ) : isMock ? (
             <>
               <span className="h-1.5 w-1.5 rounded-full bg-gold animate-pulse" aria-hidden="true" />

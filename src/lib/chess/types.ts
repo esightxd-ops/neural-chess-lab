@@ -124,6 +124,12 @@ export interface DashboardSummary {
   primaryPercentile?: number;
 }
 
+export interface ImportMeta {
+  importedArchiveMonths: number;
+  failedArchiveMonths: number;
+  skippedInvalidGames: number;
+}
+
 export interface ChessAnalytics {
   profile: PlayerProfile;
   fetchedAt: number;
@@ -136,6 +142,7 @@ export interface ChessAnalytics {
   streaks: StreakStats;
   records: RecordItem[];
   summary: DashboardSummary;
+  meta?: ImportMeta;
 }
 
 export interface ImportResult {
