@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { buildAnalytics, normalizeGame, normalizeProfile } from "../analytics";
 import { MAX_GAMES, MAX_MONTHS, UsernameSchema } from "../validators";
-import { __resetServerCacheForTests, importChessProfile } from "../chess.functions";
+import { __resetServerCacheForTests, importChessProfileHandler } from "../chess.functions";
 
 describe("UsernameSchema", () => {
   test("rejects invalid names", () => {
