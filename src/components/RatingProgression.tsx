@@ -88,13 +88,16 @@ export function RatingProgression({ className }: Props) {
         </div>
 
         <div className="flex flex-col items-end gap-2">
-          <div className="flex gap-1 panel-elevated p-0.5">
+          <div role="tablist" aria-label="Time class" className="flex gap-1 panel-elevated p-0.5">
             {(available.length ? available : MODE_KEYS).map((m) => (
               <button
                 key={m}
+                role="tab"
+                aria-selected={mode === m}
                 onClick={() => setMode(m)}
                 className={cn(
-                  "px-2.5 h-7 rounded text-[11px] font-mono uppercase tracking-widest transition-colors",
+                  "px-3 sm:px-2.5 min-h-11 sm:min-h-7 rounded text-[11px] font-mono uppercase tracking-widest transition-colors",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-1 focus-visible:ring-offset-background",
                   mode === m
                     ? "bg-primary/15 text-primary"
                     : "text-muted-foreground hover:text-foreground",
@@ -104,13 +107,16 @@ export function RatingProgression({ className }: Props) {
               </button>
             ))}
           </div>
-          <div className="flex gap-1">
+          <div role="tablist" aria-label="Range" className="flex gap-1">
             {RANGES.map((r) => (
               <button
                 key={r}
+                role="tab"
+                aria-selected={range === r}
                 onClick={() => setRange(r)}
                 className={cn(
-                  "px-2 h-6 rounded text-[10px] font-mono uppercase tracking-widest transition-colors",
+                  "px-3 sm:px-2 min-h-11 sm:min-h-6 rounded text-[10px] font-mono uppercase tracking-widest transition-colors",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-1 focus-visible:ring-offset-background",
                   range === r ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground",
                 )}
               >
