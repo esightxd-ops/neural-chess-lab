@@ -2,15 +2,12 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { buildAnalytics, normalizeGame, normalizeProfile, type RawStats } from "./analytics";
 import type { ChessAnalytics, Game, ImportMeta, TimeClass } from "./types";
+import { MAX_GAMES, MAX_MONTHS, UsernameSchema } from "./validators";
 
 const UA = "Chesslab/1.0 (https://lovable.dev)";
 const REQUEST_TIMEOUT_MS = 10_000;
 const MAX_ATTEMPTS = 3;
 const BACKOFF_MS = [300, 800, 1800];
-
-// MVP import guards — prevent unbounded fetches from Chess.com.
-const MAX_MONTHS = 6;
-const MAX_GAMES = 400;
 
 class HttpError extends Error {
   status: number;
