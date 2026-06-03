@@ -1,6 +1,5 @@
 import { ArrowUpRight, ExternalLink, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useChessData } from "@/lib/chess/store";
 import type { Game } from "@/lib/chess/types";
 
 const resultColor: Record<Game["result"], string> = {
@@ -31,15 +30,26 @@ function formatMode(g: Game): string {
 }
 
 interface Props {
-  rows?: Game[];
+  rows: Game[];
   limit?: number;
   showTitle?: boolean;
   dense?: boolean;
+  profileUsername?: string;
+  archiveUrl?: string;
 }
 
-export function RecentGamesTable({ rows, limit = 8, showTitle = true, dense = false }: Props) {
-  const { analytics } = useChessData();
-  const data = (rows ?? analytics.games).slice(0, limit);
+export function RecentGamesTable({
+  rows,
+  limit = 8,
+  showTitle = true,
+  dense = false,
+  profileUsername,
+  archiveUrl,
+}: Props) {
+  const data = rows.slice(0, limit);
+  const viewAllHref =
+    archiveUrl ??
+    (profileUsername ? `https://www.chess.com/games/archive/${profileUsername}` : undefined);
 
   if (data.length === 0) {
     return (
@@ -61,14 +71,16 @@ export function RecentGamesTable({ rows, limit = 8, showTitle = true, dense = fa
               last {data.length} games · click to open on chess.com
             </p>
           </div>
-          <a
-            href={`https://www.chess.com/games/archive/${analytics.profile.username}`}
-            target="_blank"
-            rel="noreferrer"
-            className="text-[10px] font-mono uppercase tracking-widest text-primary hover:underline flex items-center gap-1"
-          >
-            View all <ArrowUpRight className="h-3 w-3" />
-          </a>
+          {viewAllHref && (
+            <a
+              href={viewAllHref}
+              target="_blank"
+              rel="noreferrer"
+              className="text-[10px] font-mono uppercase tracking-widest text-primary hover:underline flex items-center gap-1"
+            >
+              View all <ArrowUpRight className="h-3 w-3" />
+            </a>
+          )}
         </div>
       )}
 
