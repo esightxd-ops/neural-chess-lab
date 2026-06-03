@@ -177,7 +177,8 @@ describe("importChessProfile (server)", () => {
     expect(profileAttempts).toBeGreaterThanOrEqual(2);
     expect(data.games.length).toBeLessThanOrEqual(MAX_GAMES);
     // Only the last 6 archive months are fetched
-    expect(data.meta?.importedArchiveMonths! + data.meta?.failedArchiveMonths!).toBe(MAX_MONTHS);
+    const meta = data.meta!;
+    expect(meta.importedArchiveMonths + meta.failedArchiveMonths).toBe(MAX_MONTHS);
     expect(data.meta?.failedArchiveMonths).toBe(1);
     expect(data.meta?.skippedInvalidGames).toBeGreaterThan(0);
   }, 15_000);
