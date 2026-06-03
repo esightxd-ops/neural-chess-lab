@@ -20,10 +20,14 @@ interface State {
   isLoading: boolean;
   error: string | null;
   fetchedAt: number | null;
-  importProfile: (username: string) => Promise<void>;
-  refresh: () => Promise<void>;
+  importProfile: (username: string) => Promise<ImportResult>;
+  refresh: () => Promise<ImportResult>;
   clear: () => void;
 }
+
+export type ImportResult =
+  | { ok: true; username: string }
+  | { ok: false; error: string };
 
 const ChessContext = createContext<State | null>(null);
 const STORAGE_KEY = "chesslab.username";
