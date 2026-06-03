@@ -1,33 +1,87 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { buildAnalytics, normalizeGame, normalizeProfile, type RawStats } from "./analytics";
-import type { ChessAnalytics, Game, TimeClass } from "./types";
+import type { ChessAnalytics, Game, ImportMeta, TimeClass } from "./types";
 
 const UA = "Chesslab/1.0 (https://lovable.dev)";
+const REQUEST_TIMEOUT_MS = 10_000;
+const MAX_ATTEMPTS = 3;
+const BACKOFF_MS = [300, 800, 1800];
 
+// MVP import guards — prevent unbounded fetches from Chess.com.
+const MAX_MONTHS = 6;
+const MAX_GAMES = 400;
+
+class HttpError extends Error {
+  status: number;
+  retryAfter?: number;
+  constructor(status: number, message: string, retryAfter?: number) {
+    super(message);
+    this.status = status;
+    this.retryAfter = retryAfter;
+  }
+}
+
+function isTransientStatus(status: number) {
+  return status === 408 || status === 429 || (status >= 500 && status < 600);
+}
+
+async function sleep(ms: number) {
+  return new Promise((r) => setTimeout(r, ms));
+}
+
+// Fetch with AbortController timeout + retry/backoff for transient errors only.
+// 400 / 403 / 404 are surfaced immediately so callers can map them to UX
+// (e.g. the existing 404 → "user not found" branch).
 async function cdcFetch(url: string): Promise<Response> {
-  return fetch(url, {
-    headers: {
-      "User-Agent": UA,
-      Accept: "application/json",
-    },
-  });
+  let lastErr: unknown;
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), REQUEST_TIMEOUT_MS);
+    try {
+      const res = await fetch(url, {
+        headers: { "User-Agent": UA, Accept: "application/json" },
+        signal: ctrl.signal,
+      });
+      clearTimeout(timer);
+      if (res.ok) return res;
+      if (!isTransientStatus(res.status)) {
+        const retryAfterHdr = res.headers.get("retry-after");
+        throw new HttpError(
+          res.status,
+          `Chess.com ${res.status} for ${url}`,
+          retryAfterHdr ? Number(retryAfterHdr) : undefined,
+        );
+      }
+      // transient: maybe retry
+      const retryAfterHdr = res.headers.get("retry-after");
+      lastErr = new HttpError(
+        res.status,
+        `Chess.com ${res.status} for ${url}`,
+        retryAfterHdr ? Number(retryAfterHdr) : undefined,
+      );
+    } catch (e) {
+      clearTimeout(timer);
+      if (e instanceof HttpError && !isTransientStatus(e.status)) throw e;
+      lastErr = e;
+    }
+    if (attempt < MAX_ATTEMPTS - 1) {
+      let delay = BACKOFF_MS[attempt] ?? 1800;
+      if (lastErr instanceof HttpError && lastErr.retryAfter && lastErr.status === 429) {
+        delay = Math.min(Math.max(lastErr.retryAfter * 1000, delay), 5000);
+      }
+      await sleep(delay);
+    }
+  }
+  throw lastErr instanceof Error ? lastErr : new Error("Chess.com request failed");
 }
 
 async function fetchJson(url: string): Promise<unknown> {
   const res = await cdcFetch(url);
-  if (!res.ok) {
-    const err = new Error(`Chess.com ${res.status} for ${url}`) as Error & { status?: number };
-    err.status = res.status;
-    throw err;
-  }
   return await res.json();
 }
 
 // ---------- Zod schemas at the Chess.com API boundary ----------
-// These validate untrusted external payloads before they flow into
-// normalizeProfile / normalizeGame / buildAnalytics. Domain types in
-// src/lib/chess/types.ts remain the source of truth for the UI layer.
 
 const ProfileSchema = z.object({
   username: z.string(),
@@ -43,21 +97,18 @@ const ProfileSchema = z.object({
   league: z.string().optional(),
 });
 
-const RatingBucketSchema = z
-  .object({
-    last: z.object({ rating: z.number().optional() }).partial().optional(),
-    best: z.object({ rating: z.number().optional() }).partial().optional(),
-  })
-  .partial();
+const RatingBucketSchema = z.object({
+  last: z.object({ rating: z.number().optional() }).optional(),
+  best: z.object({ rating: z.number().optional() }).optional(),
+});
 
-const StatsSchema = z
-  .object({
-    chess_bullet: RatingBucketSchema.optional(),
-    chess_blitz: RatingBucketSchema.optional(),
-    chess_rapid: RatingBucketSchema.optional(),
-    chess_daily: RatingBucketSchema.optional(),
-  })
-  .passthrough();
+// No .passthrough() so the inferred type aligns with RawStats and we can drop the cast.
+const StatsSchema = z.object({
+  chess_bullet: RatingBucketSchema.optional(),
+  chess_blitz: RatingBucketSchema.optional(),
+  chess_rapid: RatingBucketSchema.optional(),
+  chess_daily: RatingBucketSchema.optional(),
+}) satisfies z.ZodType<RawStats>;
 
 const ArchivesSchema = z.object({
   archives: z.array(z.string()),
@@ -94,14 +145,6 @@ const ArchiveMonthSchema = z.object({
   games: z.array(z.unknown()),
 });
 
-// MVP import guards — prevent unbounded fetches from Chess.com.
-// The free public API returns every archive month; we cap at the latest 6
-// months and 400 games to keep server requests fast and the dashboard
-// responsive. Analytics functions stay pure; bounding happens at the
-// API boundary only.
-const MAX_MONTHS = 6;
-const MAX_GAMES = 400;
-
 export const importChessProfile = createServerFn({ method: "POST" })
   .inputValidator(
     z.object({
@@ -127,36 +170,47 @@ export const importChessProfile = createServerFn({ method: "POST" })
         fetchJson(`${base}/games/archives`),
       ]);
       profileRaw = ProfileSchema.parse(p);
-      stats = StatsSchema.parse(s) as RawStats;
+      stats = StatsSchema.parse(s);
       archives = ArchivesSchema.parse(a);
     } catch (e) {
-      const err = e as Error & { status?: number };
-      if (err.status === 404) {
-        throw new Error(`Chess.com user "${data.username}" not found`);
+      if (e instanceof HttpError) {
+        if (e.status === 404) {
+          throw new Error(`Chess.com user "${data.username}" not found`);
+        }
+        if (e.status === 429) {
+          throw new Error("Chess.com rate limit reached. Try again in a minute.");
+        }
+        throw new Error(`Failed to reach Chess.com (${e.status})`);
       }
       if (e instanceof z.ZodError) {
         throw new Error("Chess.com returned an unexpected response shape");
       }
-      throw new Error(`Failed to reach Chess.com (${err.status ?? "network error"})`);
+      throw new Error("Failed to reach Chess.com (network error)");
     }
 
     const recent = archives.archives.slice(-MAX_MONTHS);
+    let failedArchiveMonths = 0;
     const monthly = await Promise.all(
       recent.map(async (u) => {
         try {
           const json = await fetchJson(u);
           return ArchiveMonthSchema.parse(json);
         } catch {
+          failedArchiveMonths++;
           return { games: [] as unknown[] };
         }
       }),
     );
 
+    let skippedInvalidGames = 0;
     const games: Game[] = [];
     for (const m of monthly) {
       for (const raw of m.games) {
         const parsed = ArchiveGameSchema.safeParse(raw);
-        if (!parsed.success) continue;
+        if (!parsed.success) {
+          skippedInvalidGames++;
+          continue;
+        }
         const g = normalizeGame(parsed.data, user);
         if (g) games.push(g);
       }
@@ -164,5 +218,11 @@ export const importChessProfile = createServerFn({ method: "POST" })
     games.sort((a, b) => b.endTime - a.endTime);
     const trimmed = games.slice(0, MAX_GAMES);
 
-    return buildAnalytics(normalizeProfile(profileRaw), trimmed, stats);
+    const analytics = buildAnalytics(normalizeProfile(profileRaw), trimmed, stats);
+    const meta: ImportMeta = {
+      importedArchiveMonths: recent.length - failedArchiveMonths,
+      failedArchiveMonths,
+      skippedInvalidGames,
+    };
+    return { ...analytics, meta };
   });
