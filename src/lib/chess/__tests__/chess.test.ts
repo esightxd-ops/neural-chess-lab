@@ -152,7 +152,7 @@ describe("importChessProfile (server)", () => {
   test("retries on 429 then succeeds; preserves cap and partial-meta", async () => {
     const { archives, monthBodies } = buildArchiveResponses(12, 60, 2);
     let profileAttempts = 0;
-    const failedMonth = archives[3];
+    const failedMonth = archives[archives.length - 3]; // within the last MAX_MONTHS
     installMockFetch((url) => {
       if (url === "https://api.chess.com/pub/player/demo") {
         profileAttempts++;
