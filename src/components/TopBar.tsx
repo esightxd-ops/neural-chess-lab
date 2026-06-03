@@ -37,9 +37,10 @@ export function TopBar({ section, crumb }: Props) {
     e.preventDefault();
     const val = input.trim();
     if (!val) return;
-    await importProfile(val);
-    toast.success(`Imported ${val}`);
     setInput("");
+    const id = toast.loading(`Importing ${val}…`);
+    await importProfile(val);
+    toast.dismiss(id);
   };
 
   return (
