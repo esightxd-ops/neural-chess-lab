@@ -72,12 +72,18 @@ function OpponentsPage() {
                       <td
                         className={cn(
                           "py-2.5 px-2 text-right text-xs",
-                          score >= 55 ? "text-primary" : score >= 45 ? "text-foreground" : "text-negative",
+                          score >= 55
+                            ? "text-primary"
+                            : score >= 45
+                              ? "text-foreground"
+                              : "text-negative",
                         )}
                       >
                         {score.toFixed(1)}%
                       </td>
-                      <td className="py-2.5 px-2 text-right text-xs text-muted-foreground">{o.avgRating}</td>
+                      <td className="py-2.5 px-2 text-right text-xs text-muted-foreground">
+                        {o.avgRating}
+                      </td>
                       <td className="py-2.5 px-2 text-xs text-muted-foreground hidden md:table-cell">
                         {o.favoriteMode}
                       </td>

@@ -70,15 +70,7 @@ export function ColorPerformance() {
   );
 }
 
-function Cell({
-  label,
-  value,
-  accent,
-}: {
-  label: string;
-  value: string;
-  accent?: "primary";
-}) {
+function Cell({ label, value, accent }: { label: string; value: string; accent?: "primary" }) {
   return (
     <div>
       <div className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">

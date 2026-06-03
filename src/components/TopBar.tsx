@@ -51,9 +51,7 @@ export function TopBar({ section, crumb }: Props) {
         <div className="hidden md:flex h-7 w-7 rounded-md bg-primary/15 items-center justify-center">
           <span className="font-mono text-primary text-sm font-bold">♞</span>
         </div>
-        <div className="hidden md:block text-sm font-semibold tracking-tight">
-          Chesslab
-        </div>
+        <div className="hidden md:block text-sm font-semibold tracking-tight">Chesslab</div>
         <span className="hidden md:inline text-muted-foreground/40">/</span>
         <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground whitespace-nowrap">
           {section}
@@ -105,7 +103,10 @@ export function TopBar({ section, crumb }: Props) {
               <X className="h-3 w-3" />
             </button>
           )}
-          <kbd className="font-mono text-[10px] text-muted-foreground border border-border rounded px-1" aria-hidden="true">
+          <kbd
+            className="font-mono text-[10px] text-muted-foreground border border-border rounded px-1"
+            aria-hidden="true"
+          >
             ⏎
           </kbd>
         </form>
@@ -126,7 +127,10 @@ export function TopBar({ section, crumb }: Props) {
             </>
           ) : (
             <>
-              <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" aria-hidden="true" />
+              <span
+                className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse"
+                aria-hidden="true"
+              />
               synced {formatAgo(fetchedAt)}
               <span className="sr-only">{tick}</span>
             </>

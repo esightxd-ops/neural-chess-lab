@@ -4,10 +4,7 @@ import { cn } from "@/lib/utils";
 import { useChessData } from "@/lib/chess/store-context";
 import type { TimeClass, TimeControlStats } from "@/lib/chess/types";
 
-const META: Record<
-  TimeClass,
-  { label: string; icon: LucideIcon; accent: "primary" | "blue" }
-> = {
+const META: Record<TimeClass, { label: string; icon: LucideIcon; accent: "primary" | "blue" }> = {
   bullet: { label: "Bullet", icon: Bolt, accent: "blue" },
   blitz: { label: "Blitz", icon: Zap, accent: "blue" },
   rapid: { label: "Rapid", icon: Clock4, accent: "primary" },
@@ -60,7 +57,9 @@ export function TimeControlGrid() {
                   <span
                     className={cn(
                       "font-mono text-[11px] px-1.5 py-0.5 rounded",
-                      m.delta30d >= 0 ? "text-primary bg-primary/10" : "text-negative bg-negative/10",
+                      m.delta30d >= 0
+                        ? "text-primary bg-primary/10"
+                        : "text-negative bg-negative/10",
                     )}
                   >
                     {m.delta30d >= 0 ? "+" : ""}
@@ -77,7 +76,10 @@ export function TimeControlGrid() {
 
                 <div className="flex h-1.5 rounded overflow-hidden">
                   <span className="bg-primary" style={{ width: `${(m.w / total) * 100}%` }} />
-                  <span className="bg-muted-foreground/40" style={{ width: `${(m.d / total) * 100}%` }} />
+                  <span
+                    className="bg-muted-foreground/40"
+                    style={{ width: `${(m.d / total) * 100}%` }}
+                  />
                   <span className="bg-negative" style={{ width: `${(m.l / total) * 100}%` }} />
                 </div>
 

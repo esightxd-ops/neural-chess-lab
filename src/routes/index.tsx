@@ -39,10 +39,7 @@ function Overview() {
       <TimeControlGrid />
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
         <div className="xl:col-span-2">
-          <RecentGamesTable
-            rows={analytics.games}
-            profileUsername={analytics.profile.username}
-          />
+          <RecentGamesTable rows={analytics.games} profileUsername={analytics.profile.username} />
         </div>
         <OpeningTable />
       </div>

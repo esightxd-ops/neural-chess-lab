@@ -34,7 +34,12 @@ function classifyResult(raw: string): GameResult {
 function countryFlag(iso?: string): string | undefined {
   if (!iso || iso.length !== 2) return undefined;
   const A = 0x1f1e6;
-  return String.fromCodePoint(...iso.toUpperCase().split("").map((c) => A + c.charCodeAt(0) - 65));
+  return String.fromCodePoint(
+    ...iso
+      .toUpperCase()
+      .split("")
+      .map((c) => A + c.charCodeAt(0) - 65),
+  );
 }
 
 function pgnTag(pgn: string, tag: string): string | undefined {
@@ -85,9 +90,7 @@ export function normalizeGame(raw: RawArchiveGame, user: string): Game | null {
   const pgn = raw.pgn || "";
   const ecoTag = pgnTag(pgn, "ECO") || raw.eco?.split("/").pop() || "";
   const opening =
-    pgnTag(pgn, "Opening") ||
-    openingFromEcoUrl(pgnTag(pgn, "ECOUrl") || raw.eco) ||
-    "Unknown";
+    pgnTag(pgn, "Opening") || openingFromEcoUrl(pgnTag(pgn, "ECOUrl") || raw.eco) || "Unknown";
   return {
     id: raw.uuid || raw.url,
     url: raw.url,
@@ -137,13 +140,13 @@ function computeTimeControlStats(
     const l = tcGames.filter((g) => g.result === "L").length;
     const d = tcGames.filter((g) => g.result === "D").length;
     const total = w + l + d;
-    const avgOpp = total ? Math.round(tcGames.reduce((s, g) => s + g.opponentRating, 0) / total) : 0;
+    const avgOpp = total
+      ? Math.round(tcGames.reduce((s, g) => s + g.opponentRating, 0) / total)
+      : 0;
     const sortedHist = tcHist.slice().sort((a, b) => a.t - b.t);
     const current = apiCurrent ?? sortedHist[sortedHist.length - 1]?.rating ?? 0;
     const best = Math.max(apiBest ?? 0, ...sortedHist.map((h) => h.rating), current);
-    const worst = sortedHist.length
-      ? Math.min(...sortedHist.map((h) => h.rating))
-      : undefined;
+    const worst = sortedHist.length ? Math.min(...sortedHist.map((h) => h.rating)) : undefined;
     const r7 = sortedHist.find((h) => h.t >= now - D7)?.rating;
     const r30 = sortedHist.find((h) => h.t >= now - D30)?.rating;
     out[tc] = {
@@ -282,7 +285,13 @@ function computeColors(games: Game[]): ColorStats[] {
 
 function computeStreaks(games: Game[]): StreakStats {
   if (!games.length) {
-    return { currentResult: "D", currentLength: 0, longestWin: 0, longestUnbeaten: 0, longestLoss: 0 };
+    return {
+      currentResult: "D",
+      currentLength: 0,
+      longestWin: 0,
+      longestUnbeaten: 0,
+      longestLoss: 0,
+    };
   }
   const ordered = games.slice().sort((a, b) => a.endTime - b.endTime);
   let longestWin = 0;

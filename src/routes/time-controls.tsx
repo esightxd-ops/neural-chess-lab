@@ -52,7 +52,11 @@ function TimeControlsPage() {
                     <td
                       className={cn(
                         "py-2.5 px-2 text-right",
-                        r.delta30d > 0 ? "text-primary" : r.delta30d < 0 ? "text-negative" : "text-muted-foreground",
+                        r.delta30d > 0
+                          ? "text-primary"
+                          : r.delta30d < 0
+                            ? "text-negative"
+                            : "text-muted-foreground",
                       )}
                     >
                       {r.delta30d > 0 ? "+" : ""}

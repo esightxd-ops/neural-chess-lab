@@ -26,9 +26,21 @@ const OPENINGS = [
 ];
 
 const OPPONENTS = [
-  "grandpawn_42", "knightmare", "bishop_blast", "endgame_eli", "tactical_tim",
-  "deepblue_jr", "pawnpusher", "rookieboss", "zugzwang_z", "blunderbuss",
-  "passed_pawn", "fianchetto", "kingsafety", "openfile", "centralpawn",
+  "grandpawn_42",
+  "knightmare",
+  "bishop_blast",
+  "endgame_eli",
+  "tactical_tim",
+  "deepblue_jr",
+  "pawnpusher",
+  "rookieboss",
+  "zugzwang_z",
+  "blunderbuss",
+  "passed_pawn",
+  "fianchetto",
+  "kingsafety",
+  "openfile",
+  "centralpawn",
 ];
 
 const TC = ["bullet", "blitz", "rapid", "daily"] as const;
@@ -57,8 +69,7 @@ function generateGames(seed = 42, n = 360): Game[] {
     const oppRating = Math.round(myRating + (rng() - 0.5) * 120);
     const color = rng() > 0.5 ? "white" : "black";
     const roll = rng();
-    const result: "W" | "L" | "D" =
-      roll < 0.55 ? "W" : roll < 0.9 ? "L" : "D";
+    const result: "W" | "L" | "D" = roll < 0.55 ? "W" : roll < 0.9 ? "L" : "D";
     const [opening, eco] = OPENINGS[Math.floor(rng() * OPENINGS.length)];
     const opp = OPPONENTS[Math.floor(rng() * OPPONENTS.length)];
     const moves = 20 + Math.floor(rng() * 60);

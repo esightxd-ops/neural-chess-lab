@@ -76,7 +76,17 @@ function GamesPage() {
             </div>
             <MiniBoard />
             <div className="grid grid-cols-3 gap-2 text-center">
-              <Pill label="Result" value={selected.result} tone={selected.result === "W" ? "primary" : selected.result === "L" ? "negative" : undefined} />
+              <Pill
+                label="Result"
+                value={selected.result}
+                tone={
+                  selected.result === "W"
+                    ? "primary"
+                    : selected.result === "L"
+                      ? "negative"
+                      : undefined
+                }
+              />
               <Pill label="Moves" value={String(selected.moves || "—")} />
               <Pill label="Opp" value={String(selected.opponentRating || "—")} />
             </div>

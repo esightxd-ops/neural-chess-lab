@@ -141,7 +141,11 @@ export function OpeningTable({ rows, showTitle = true, limit = 12 }: Props) {
                   )}
                 >
                   <span className="inline-flex items-center gap-1">
-                    {o.delta >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                    {o.delta >= 0 ? (
+                      <TrendingUp className="h-3 w-3" />
+                    ) : (
+                      <TrendingDown className="h-3 w-3" />
+                    )}
                     {o.delta > 0 ? "+" : ""}
                     {o.delta}
                   </span>

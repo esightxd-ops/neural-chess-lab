@@ -63,7 +63,12 @@ const ArchivesSchema = z.object({
   archives: z.array(z.string()),
 });
 
-const TimeClassSchema = z.enum(["bullet", "blitz", "rapid", "daily"]) satisfies z.ZodType<TimeClass>;
+const TimeClassSchema = z.enum([
+  "bullet",
+  "blitz",
+  "rapid",
+  "daily",
+]) satisfies z.ZodType<TimeClass>;
 
 const PlayerSideSchema = z.object({
   username: z.string(),
