@@ -8,6 +8,7 @@ import { RecentGamesTable } from "@/components/RecentGamesTable";
 import { OpeningTable } from "@/components/OpeningTable";
 import { ColorPerformance } from "@/components/ColorPerformance";
 import { StreaksRecords } from "@/components/StreaksRecords";
+import { useChessData } from "@/lib/chess/store";
 
 export const Route = createFileRoute("/")({
   head: () => ({
