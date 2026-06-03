@@ -2,7 +2,7 @@ import { Zap, Bolt, Clock4, CalendarDays } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useChessData } from "@/lib/chess/store";
-import type { TimeClass } from "@/lib/chess/types";
+import type { TimeClass, TimeControlStats } from "@/lib/chess/types";
 
 const META: Record<
   TimeClass,
