@@ -1,81 +1,48 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AppSidebar } from "@/components/AppSidebar";
-import { PlayerHeader } from "@/components/PlayerHeader";
-import { SkillRadarCard } from "@/components/SkillRadarCard";
-import { PerformanceRatingsCard } from "@/components/PerformanceRatingsCard";
-import { LastMatchCard } from "@/components/LastMatchCard";
-import { WeaknessCard } from "@/components/WeaknessCard";
-import { RatingTrendCard } from "@/components/RatingTrendCard";
-import { PlayerArchetypeCard } from "@/components/PlayerArchetypeCard";
-import { NarrativeFeedCard } from "@/components/NarrativeFeedCard";
+import { AppShell } from "@/components/AppShell";
+import { ProfileHero } from "@/components/ProfileHero";
+import { StatTileRow } from "@/components/StatTileRow";
+import { RatingProgression } from "@/components/RatingProgression";
+import { TimeControlGrid } from "@/components/TimeControlGrid";
+import { RecentGamesTable } from "@/components/RecentGamesTable";
+import { OpeningTable } from "@/components/OpeningTable";
+import { ColorPerformance } from "@/components/ColorPerformance";
+import { StreaksRecords } from "@/components/StreaksRecords";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Dashboard — Chess Performance Lab" },
+      { title: "Overview — Chesslab" },
       {
         name: "description",
         content:
-          "Analytical chess performance lab. Track skill ratings, detect weaknesses, and review every move with precision.",
+          "Your competitive chess profile. Ratings, time controls, openings, opponents, streaks, and records.",
       },
-      { property: "og:title", content: "Chess Performance Lab" },
+      { property: "og:title", content: "Chesslab — Competitive chess profile" },
       {
         property: "og:description",
-        content: "Your chess, measured scientifically.",
+        content: "Track ratings, win rate, openings, and records like a pro.",
       },
     ],
   }),
-  component: Dashboard,
+  component: Overview,
 });
 
-function Dashboard() {
+function Overview() {
   return (
-    <div className="min-h-screen flex bg-background text-foreground">
-      <AppSidebar />
-      <main className="flex-1 min-w-0">
-        <div className="h-14 border-b border-border flex items-center justify-between px-5 sticky top-0 bg-background/80 backdrop-blur z-10">
-          <div className="flex items-center gap-3">
-            <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-              Dashboard
-            </span>
-            <span className="text-muted-foreground/40">/</span>
-            <span className="text-xs font-mono text-foreground">Overview</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center gap-2 text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-              Live analysis
-            </div>
-            <button className="rounded-md border border-border bg-panel-elevated px-3 py-1.5 text-xs font-mono hover:border-primary/40 transition-colors">
-              Import games
-            </button>
-          </div>
+    <AppShell section="Overview">
+      <ProfileHero />
+      <StatTileRow />
+      <RatingProgression />
+      <TimeControlGrid />
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
+        <div className="xl:col-span-2">
+          <RecentGamesTable />
         </div>
-
-        <div className="p-5 space-y-5 max-w-[1600px]">
-          <PlayerHeader />
-
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
-            <div className="xl:col-span-2 space-y-5">
-              <div className="grid grid-cols-1 lg:grid-cols-5 gap-5">
-                <div className="lg:col-span-3">
-                  <SkillRadarCard />
-                </div>
-                <div className="lg:col-span-2 space-y-5">
-                  <PlayerArchetypeCard />
-                </div>
-              </div>
-              <RatingTrendCard />
-              <LastMatchCard />
-            </div>
-            <div className="space-y-5">
-              <NarrativeFeedCard />
-              <PerformanceRatingsCard />
-              <WeaknessCard />
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
+        <OpeningTable />
+      </div>
+      <ColorPerformance />
+      <StreaksRecords compact />
+    </AppShell>
   );
 }

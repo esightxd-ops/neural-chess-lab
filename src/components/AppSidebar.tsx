@@ -2,28 +2,25 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   Swords,
-  BookOpen,
-  Target,
-  GitCompare,
-  Dumbbell,
-  Sparkles,
-  Trophy,
-  User,
-  Settings,
   TrendingUp,
+  BookOpen,
+  Timer,
+  Users,
+  Flame,
+  Trophy,
+  Settings,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const nav = [
-  { to: "/", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/matches", label: "Matches", icon: Swords },
+  { to: "/", label: "Overview", icon: LayoutDashboard },
+  { to: "/games", label: "Games", icon: Swords },
+  { to: "/ratings", label: "Ratings", icon: TrendingUp },
   { to: "/openings", label: "Openings", icon: BookOpen },
-  { to: "/skills", label: "Skills", icon: Target },
-  { to: "/compare", label: "Compare", icon: GitCompare },
-  { to: "/training", label: "Training", icon: Dumbbell },
-  { to: "/insights", label: "Insights", icon: Sparkles },
-  { to: "/leaderboards", label: "Leaderboards", icon: Trophy },
-  { to: "/profile", label: "Profile", icon: User },
+  { to: "/time-controls", label: "Time Controls", icon: Timer },
+  { to: "/opponents", label: "Opponents", icon: Users },
+  { to: "/streaks", label: "Streaks", icon: Flame },
+  { to: "/records", label: "Records", icon: Trophy },
   { to: "/settings", label: "Settings", icon: Settings },
 ];
 
@@ -31,16 +28,19 @@ export function AppSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
 
   return (
-    <aside className="hidden md:flex w-[72px] shrink-0 flex-col border-r border-border bg-panel sticky top-0 h-screen">
+    <aside className="hidden md:flex w-[72px] shrink-0 flex-col border-r border-border bg-panel sticky top-0 h-screen z-20">
       <div className="h-14 flex items-center justify-center border-b border-border">
-        <div className="h-8 w-8 rounded-md bg-primary/15 grid place-items-center glow-primary">
-          <span className="font-mono text-primary text-sm font-bold">♞</span>
+        <div className="h-9 w-9 rounded-md bg-primary/15 grid place-items-center glow-primary">
+          <span className="font-mono text-primary text-base font-bold">♞</span>
         </div>
       </div>
 
       <nav className="flex-1 flex flex-col items-center gap-1 py-3">
         {nav.map((item) => {
-          const active = pathname === item.to;
+          const active =
+            item.to === "/"
+              ? pathname === "/"
+              : pathname.startsWith(item.to);
           const Icon = item.icon;
           return (
             <Link
@@ -50,7 +50,7 @@ export function AppSidebar() {
                 "group relative h-10 w-10 grid place-items-center rounded-md transition-colors",
                 active
                   ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary",
               )}
             >
               {active && (
@@ -65,15 +65,11 @@ export function AppSidebar() {
         })}
       </nav>
 
-      <div className="border-t border-border p-3 flex flex-col items-center gap-2">
-        <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary/30 to-accent-cyan/20 grid place-items-center text-xs font-semibold">
+      <div className="border-t border-border p-3 flex flex-col items-center gap-1.5">
+        <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary/30 to-accent-blue/20 grid place-items-center text-xs font-semibold">
           MK
         </div>
         <div className="text-[10px] font-mono text-muted-foreground">1842</div>
-        <div className="flex items-center gap-0.5 text-[10px] font-mono text-primary">
-          <TrendingUp className="h-3 w-3" />
-          +24
-        </div>
       </div>
     </aside>
   );
