@@ -20,10 +20,7 @@ function SettingsPage() {
           { name: "Chess.com", handle: "magnus_k", status: "Connected" },
           { name: "Lichess", handle: "—", status: "Connect" },
         ].map((a) => (
-          <div
-            key={a.name}
-            className="flex items-center justify-between panel-elevated px-4 py-3"
-          >
+          <div key={a.name} className="flex items-center justify-between panel-elevated px-4 py-3">
             <div>
               <div className="text-sm font-semibold">{a.name}</div>
               <div className="text-[11px] font-mono text-muted-foreground">{a.handle}</div>

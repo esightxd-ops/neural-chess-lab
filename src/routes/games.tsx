@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { RecentGamesTable } from "@/components/RecentGamesTable";
 import { ChevronDown, Filter } from "lucide-react";
-import { useChessData } from "@/lib/chess/store";
+import { useChessData } from "@/lib/chess/store-context";
 import type { Game, TimeClass } from "@/lib/chess/types";
 import { cn } from "@/lib/utils";
 
@@ -76,7 +76,17 @@ function GamesPage() {
             </div>
             <MiniBoard />
             <div className="grid grid-cols-3 gap-2 text-center">
-              <Pill label="Result" value={selected.result} tone={selected.result === "W" ? "primary" : selected.result === "L" ? "negative" : undefined} />
+              <Pill
+                label="Result"
+                value={selected.result}
+                tone={
+                  selected.result === "W"
+                    ? "primary"
+                    : selected.result === "L"
+                      ? "negative"
+                      : undefined
+                }
+              />
               <Pill label="Moves" value={String(selected.moves || "—")} />
               <Pill label="Opp" value={String(selected.opponentRating || "—")} />
             </div>

@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { cn } from "@/lib/utils";
-import { useChessData } from "@/lib/chess/store";
+import { useChessData } from "@/lib/chess/store-context";
 
 export const Route = createFileRoute("/opponents")({
   head: () => ({ meta: [{ title: "Opponents — Chesslab" }] }),
@@ -72,12 +72,18 @@ function OpponentsPage() {
                       <td
                         className={cn(
                           "py-2.5 px-2 text-right text-xs",
-                          score >= 55 ? "text-primary" : score >= 45 ? "text-foreground" : "text-negative",
+                          score >= 55
+                            ? "text-primary"
+                            : score >= 45
+                              ? "text-foreground"
+                              : "text-negative",
                         )}
                       >
                         {score.toFixed(1)}%
                       </td>
-                      <td className="py-2.5 px-2 text-right text-xs text-muted-foreground">{o.avgRating}</td>
+                      <td className="py-2.5 px-2 text-right text-xs text-muted-foreground">
+                        {o.avgRating}
+                      </td>
                       <td className="py-2.5 px-2 text-xs text-muted-foreground hidden md:table-cell">
                         {o.favoriteMode}
                       </td>

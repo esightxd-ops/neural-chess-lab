@@ -1,6 +1,6 @@
 import { ArrowUpRight, TrendingUp, TrendingDown, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useChessData } from "@/lib/chess/store";
+import { useChessData } from "@/lib/chess/store-context";
 import type { OpeningStats } from "@/lib/chess/types";
 
 interface Props {
@@ -141,7 +141,11 @@ export function OpeningTable({ rows, showTitle = true, limit = 12 }: Props) {
                   )}
                 >
                   <span className="inline-flex items-center gap-1">
-                    {o.delta >= 0 ? <TrendingUp className="h-3 w-3" /> : <TrendingDown className="h-3 w-3" />}
+                    {o.delta >= 0 ? (
+                      <TrendingUp className="h-3 w-3" />
+                    ) : (
+                      <TrendingDown className="h-3 w-3" />
+                    )}
                     {o.delta > 0 ? "+" : ""}
                     {o.delta}
                   </span>

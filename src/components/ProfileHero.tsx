@@ -1,6 +1,6 @@
 import { TrendingUp, TrendingDown, Flame, Calendar, Globe2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useChessData } from "@/lib/chess/store";
+import { useChessData } from "@/lib/chess/store-context";
 import type { TimeClass } from "@/lib/chess/types";
 
 const TC_LABEL: Record<TimeClass, string> = {
@@ -11,13 +11,15 @@ const TC_LABEL: Record<TimeClass, string> = {
 };
 
 function initials(name: string) {
-  return name
-    .replace(/[^A-Za-z0-9]/g, " ")
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((s) => s[0].toUpperCase())
-    .join("") || name.slice(0, 2).toUpperCase();
+  return (
+    name
+      .replace(/[^A-Za-z0-9]/g, " ")
+      .split(/\s+/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((s) => s[0].toUpperCase())
+      .join("") || name.slice(0, 2).toUpperCase()
+  );
 }
 
 function formatJoined(unix?: number) {
@@ -44,7 +46,11 @@ export function ProfileHero() {
           <div className="relative">
             <div className="h-20 w-20 lg:h-24 lg:w-24 rounded-2xl bg-gradient-to-br from-primary/40 via-accent-blue/20 to-transparent border border-border grid place-items-center text-2xl lg:text-3xl font-semibold glow-primary overflow-hidden">
               {profile.avatar ? (
-                <img src={profile.avatar} alt={profile.username} className="h-full w-full object-cover" />
+                <img
+                  src={profile.avatar}
+                  alt={profile.username}
+                  className="h-full w-full object-cover"
+                />
               ) : (
                 initials(profile.username)
               )}
@@ -127,11 +133,7 @@ export function ProfileHero() {
         <div className="grid grid-cols-2 lg:grid-cols-2 gap-3 lg:min-w-[420px] lg:border-l lg:border-border lg:pl-8">
           <MiniMetric label="7d change" value={r7} accent="primary" />
           <MiniMetric label="30d change" value={r30} accent="primary" />
-          <MiniMetric
-            label="Games analyzed"
-            raw={total.toLocaleString()}
-            sub="recent archives"
-          />
+          <MiniMetric label="Games analyzed" raw={total.toLocaleString()} sub="recent archives" />
           <MiniMetric
             label="Win rate"
             raw={`${summary.winRate.toFixed(1)}%`}
@@ -186,9 +188,7 @@ function MiniMetric({
           </span>
         )}
       </div>
-      {sub && (
-        <div className="text-[10px] font-mono text-muted-foreground mt-0.5">{sub}</div>
-      )}
+      {sub && <div className="text-[10px] font-mono text-muted-foreground mt-0.5">{sub}</div>}
     </div>
   );
 }

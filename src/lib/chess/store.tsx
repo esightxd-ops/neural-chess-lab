@@ -1,36 +1,8 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { getMockAnalytics } from "./mock";
 import { importChessProfile } from "./chess.functions";
-import type { ChessAnalytics } from "./types";
-
-interface State {
-  analytics: ChessAnalytics;
-  isMock: boolean;
-  username: string | null;
-  isLoading: boolean;
-  error: string | null;
-  fetchedAt: number | null;
-  importProfile: (username: string) => Promise<ImportResult>;
-  refresh: () => Promise<ImportResult>;
-  clear: () => void;
-}
-
-export type ImportResult =
-  | { ok: true; username: string }
-  | { ok: false; error: string };
-
-const ChessContext = createContext<State | null>(null);
-const STORAGE_KEY = "chesslab.username";
+import { ChessContext, STORAGE_KEY, type ChessDataState, type ImportResult } from "./store-context";
 
 function readStoredUsername(): string | null {
   if (typeof window === "undefined") return null;
@@ -53,7 +25,7 @@ function writeStoredUsername(value: string | null) {
 
 export function ChessDataProvider({ children }: { children: ReactNode }) {
   const mock = useMemo(() => getMockAnalytics(), []);
-  const [analytics, setAnalytics] = useState<ChessAnalytics>(mock);
+  const [analytics, setAnalytics] = useState(mock);
   const [isMock, setIsMock] = useState(true);
   const [username, setUsername] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -105,14 +77,13 @@ export function ChessDataProvider({ children }: { children: ReactNode }) {
     writeStoredUsername(null);
   }, [mock]);
 
-  // Restore last imported username on mount.
   useEffect(() => {
     const stored = readStoredUsername();
     if (stored) void runImport(stored);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const value = useMemo<State>(
+  const value = useMemo<ChessDataState>(
     () => ({
       analytics,
       isMock,
@@ -128,10 +99,4 @@ export function ChessDataProvider({ children }: { children: ReactNode }) {
   );
 
   return <ChessContext.Provider value={value}>{children}</ChessContext.Provider>;
-}
-
-export function useChessData(): State {
-  const ctx = useContext(ChessContext);
-  if (!ctx) throw new Error("useChessData must be used within ChessDataProvider");
-  return ctx;
 }

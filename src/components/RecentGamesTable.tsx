@@ -99,8 +99,7 @@ export function RecentGamesTable({
           </thead>
           <tbody className="font-mono">
             {data.map((g) => {
-              const resultLabel =
-                g.result === "W" ? "Won" : g.result === "L" ? "Lost" : "Drew";
+              const resultLabel = g.result === "W" ? "Won" : g.result === "L" ? "Lost" : "Drew";
               return (
                 <tr
                   key={g.id}
@@ -132,7 +131,9 @@ export function RecentGamesTable({
                       </div>
                       <div className="min-w-0">
                         <div className="text-foreground text-xs truncate">{g.opponent}</div>
-                        <div className="text-[10px] text-muted-foreground">{g.opponentRating || "—"}</div>
+                        <div className="text-[10px] text-muted-foreground">
+                          {g.opponentRating || "—"}
+                        </div>
                       </div>
                     </div>
                   </td>

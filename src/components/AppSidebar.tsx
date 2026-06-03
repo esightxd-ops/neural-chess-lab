@@ -37,10 +37,7 @@ export function AppSidebar() {
 
       <nav aria-label="Primary" className="flex-1 flex flex-col gap-1 px-3 py-3">
         {nav.map((item) => {
-          const active =
-            item.to === "/"
-              ? pathname === "/"
-              : pathname.startsWith(item.to);
+          const active = item.to === "/" ? pathname === "/" : pathname.startsWith(item.to);
           const Icon = item.icon;
           return (
             <Link

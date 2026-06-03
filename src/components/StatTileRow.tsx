@@ -1,5 +1,5 @@
 import { StatTile } from "./StatTile";
-import { useChessData } from "@/lib/chess/store";
+import { useChessData } from "@/lib/chess/store-context";
 import type { TimeClass } from "@/lib/chess/types";
 
 const ACCENT: Record<TimeClass, "primary" | "blue"> = {
@@ -30,12 +30,7 @@ export function StatTileRow() {
     const hist = ratingHistory.filter((h) => h.timeClass === tc);
     if (!s) {
       return (
-        <StatTile
-          key={tc}
-          label={tc[0].toUpperCase() + tc.slice(1)}
-          value="—"
-          sub="no games"
-        />
+        <StatTile key={tc} label={tc[0].toUpperCase() + tc.slice(1)} value="—" sub="no games" />
       );
     }
     return (
@@ -60,11 +55,7 @@ export function StatTileRow() {
         sub={`${summary.totalGames.toLocaleString()} games`}
         accent={summary.winRate >= 50 ? "primary" : undefined}
       />
-      <StatTile
-        label="Games"
-        value={summary.totalGames.toLocaleString()}
-        sub="recent archives"
-      />
+      <StatTile label="Games" value={summary.totalGames.toLocaleString()} sub="recent archives" />
       <StatTile
         label="Avg opponent"
         value={summary.avgOpponent ? String(summary.avgOpponent) : "—"}

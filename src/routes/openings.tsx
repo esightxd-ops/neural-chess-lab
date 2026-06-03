@@ -10,7 +10,16 @@ export const Route = createFileRoute("/openings")({
   component: OpeningsPage,
 });
 
-const FAMILIES = ["All", "Sicilian", "Caro-Kann", "Ruy Lopez", "Italian", "Queens Gambit", "Kings Indian", "London"];
+const FAMILIES = [
+  "All",
+  "Sicilian",
+  "Caro-Kann",
+  "Ruy Lopez",
+  "Italian",
+  "Queens Gambit",
+  "Kings Indian",
+  "London",
+];
 const COLORS = ["Both", "White", "Black"] as const;
 const MODES = ["All", "Bullet", "Blitz", "Rapid", "Daily"] as const;
 

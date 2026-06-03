@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { RatingProgression } from "@/components/RatingProgression";
 import { StatTile } from "@/components/StatTile";
-import { useChessData } from "@/lib/chess/store";
+import { useChessData } from "@/lib/chess/store-context";
 import type { TimeClass } from "@/lib/chess/types";
 
 export const Route = createFileRoute("/ratings")({

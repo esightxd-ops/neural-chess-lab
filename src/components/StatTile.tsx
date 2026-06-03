@@ -18,14 +18,7 @@ const accentColor: Record<string, string> = {
   default: "var(--color-muted-foreground)",
 };
 
-export function StatTile({
-  label,
-  value,
-  sub,
-  delta,
-  spark,
-  accent = "default",
-}: Props) {
+export function StatTile({ label, value, sub, delta, spark, accent = "default" }: Props) {
   const color = accentColor[accent];
   return (
     <div className="panel p-4 flex flex-col justify-between min-h-[112px] hover:border-border/80 transition-colors">
@@ -59,9 +52,7 @@ export function StatTile({
             {value}
           </div>
           {sub && (
-            <div className="text-[11px] font-mono text-muted-foreground mt-1.5 truncate">
-              {sub}
-            </div>
+            <div className="text-[11px] font-mono text-muted-foreground mt-1.5 truncate">{sub}</div>
           )}
         </div>
         {spark && spark.length > 1 && (
@@ -69,13 +60,7 @@ export function StatTile({
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={spark.map((v, i) => ({ i, v }))}>
                 <defs>
-                  <linearGradient
-                    id={`st-${label.replace(/\s/g, "")}`}
-                    x1="0"
-                    y1="0"
-                    x2="0"
-                    y2="1"
-                  >
+                  <linearGradient id={`st-${label.replace(/\s/g, "")}`} x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor={color} stopOpacity={0.5} />
                     <stop offset="100%" stopColor={color} stopOpacity={0} />
                   </linearGradient>

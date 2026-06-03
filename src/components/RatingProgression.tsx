@@ -10,7 +10,7 @@ import {
   ReferenceDot,
 } from "recharts";
 import { cn } from "@/lib/utils";
-import { useChessData } from "@/lib/chess/store";
+import { useChessData } from "@/lib/chess/store-context";
 import type { TimeClass } from "@/lib/chess/types";
 
 const MODE_KEYS: TimeClass[] = ["rapid", "blitz", "bullet", "daily"];
@@ -117,7 +117,9 @@ export function RatingProgression({ className }: Props) {
                 className={cn(
                   "px-3 sm:px-2 min-h-11 sm:min-h-6 rounded text-[10px] font-mono uppercase tracking-widest transition-colors",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/60 focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-                  range === r ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground",
+                  range === r
+                    ? "bg-secondary text-foreground"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 {r}
@@ -139,13 +141,21 @@ export function RatingProgression({ className }: Props) {
             <CartesianGrid stroke="var(--color-grid)" vertical={false} strokeDasharray="2 4" />
             <XAxis
               dataKey="d"
-              tick={{ fill: "var(--color-muted-foreground)", fontSize: 10, fontFamily: "var(--font-mono)" }}
+              tick={{
+                fill: "var(--color-muted-foreground)",
+                fontSize: 10,
+                fontFamily: "var(--font-mono)",
+              }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
               domain={["dataMin - 25", "dataMax + 25"]}
-              tick={{ fill: "var(--color-muted-foreground)", fontSize: 10, fontFamily: "var(--font-mono)" }}
+              tick={{
+                fill: "var(--color-muted-foreground)",
+                fontSize: 10,
+                fontFamily: "var(--font-mono)",
+              }}
               axisLine={false}
               tickLine={false}
               width={42}

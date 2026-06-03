@@ -8,7 +8,7 @@ import { RecentGamesTable } from "@/components/RecentGamesTable";
 import { OpeningTable } from "@/components/OpeningTable";
 import { ColorPerformance } from "@/components/ColorPerformance";
 import { StreaksRecords } from "@/components/StreaksRecords";
-import { useChessData } from "@/lib/chess/store";
+import { useChessData } from "@/lib/chess/store-context";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -39,10 +39,7 @@ function Overview() {
       <TimeControlGrid />
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-5">
         <div className="xl:col-span-2">
-          <RecentGamesTable
-            rows={analytics.games}
-            profileUsername={analytics.profile.username}
-          />
+          <RecentGamesTable rows={analytics.games} profileUsername={analytics.profile.username} />
         </div>
         <OpeningTable />
       </div>

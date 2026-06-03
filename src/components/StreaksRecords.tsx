@@ -1,7 +1,7 @@
-import { Flame, Trophy, TrendingUp, Clock, Zap, ShieldCheck, CalendarHeart, Star } from "lucide-react";
+import { Flame, Trophy, TrendingUp, Clock, Zap, CalendarHeart, Star } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useChessData } from "@/lib/chess/store";
+import { useChessData } from "@/lib/chess/store-context";
 
 const KIND_ICON: Record<string, LucideIcon> = {
   streak: Flame,
@@ -85,13 +85,11 @@ export function StreaksRecords({ title = "Streaks & Records", compact = false }:
         })}
         {compact && (
           <div className="panel-elevated p-4 flex items-center justify-center text-[10px] font-mono uppercase tracking-widest text-muted-foreground hover:text-primary cursor-default">
-            <CalendarHeart className="h-3 w-3 mr-1" /> + {analytics.records.length - items.length} more
+            <CalendarHeart className="h-3 w-3 mr-1" /> + {analytics.records.length - items.length}{" "}
+            more
           </div>
         )}
       </div>
     </section>
   );
 }
-
-// Re-export for legacy import paths
-export { ShieldCheck };
