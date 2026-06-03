@@ -230,8 +230,7 @@ async function doImport(user: string, displayName: string): Promise<ChessAnalyti
   } catch (e) {
     if (e instanceof HttpError) {
       if (e.status === 404) throw new Error(`Chess.com user "${displayName}" not found`);
-      if (e.status === 429)
-        throw new Error("Chess.com rate limit reached. Try again in a minute.");
+      if (e.status === 429) throw new Error("Chess.com rate limit reached. Try again in a minute.");
       throw new Error(`Failed to reach Chess.com (${e.status})`);
     }
     if (e instanceof TimeoutError) throw new Error("Chess.com request timed out");

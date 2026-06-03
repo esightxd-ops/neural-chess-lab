@@ -147,6 +147,4 @@ export interface ChessAnalytics {
 
 // Canonical import-result type. Re-exported from `store-context.ts` for
 // component consumers. Kept here so non-React modules can import it too.
-export type ImportResult =
-  | { ok: true; username: string }
-  | { ok: false; error: string };
+export type ImportResult = { ok: true; username: string } | { ok: false; error: string };

@@ -98,9 +98,7 @@ export function ChessDataProvider({ children }: { children: ReactNode }) {
       if (failedArchiveMonths > 0 || skippedInvalidGames > 0) {
         const bits: string[] = [];
         if (failedArchiveMonths > 0)
-          bits.push(
-            `${failedArchiveMonths} month${failedArchiveMonths === 1 ? "" : "s"} skipped`,
-          );
+          bits.push(`${failedArchiveMonths} month${failedArchiveMonths === 1 ? "" : "s"} skipped`);
         if (skippedInvalidGames > 0) bits.push(`${skippedInvalidGames} invalid games`);
         toast.warning(`Partial import: ${bits.join(", ")}`);
       }
