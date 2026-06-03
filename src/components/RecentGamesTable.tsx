@@ -1,64 +1,74 @@
 import { ArrowUpRight, ExternalLink, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useChessData } from "@/lib/chess/store";
+import type { Game } from "@/lib/chess/types";
 
-export interface GameRow {
-  id: string;
-  result: "W" | "L" | "D";
-  opponent: string;
-  oppRating: number;
-  color: "white" | "black";
-  delta: number;
-  mode: string;
-  opening: string;
-  eco: string;
-  moves: number;
-  date: string;
-  termination: string;
-}
-
-export const SAMPLE_GAMES: GameRow[] = [
-  { id: "g1", result: "W", opponent: "grandpawn_42", oppRating: 1798, color: "white", delta: 18, mode: "Rapid 10+0", opening: "Sicilian Najdorf", eco: "B90", moves: 38, date: "2h ago", termination: "resign" },
-  { id: "g2", result: "W", opponent: "knightmare", oppRating: 1812, color: "black", delta: 22, mode: "Rapid 10+0", opening: "Caro-Kann Advance", eco: "B12", moves: 47, date: "4h ago", termination: "checkmate" },
-  { id: "g3", result: "L", opponent: "bishop_blast", oppRating: 1856, color: "white", delta: -14, mode: "Blitz 5+0", opening: "Ruy Lopez Berlin", eco: "C67", moves: 52, date: "6h ago", termination: "time" },
-  { id: "g4", result: "W", opponent: "rookieboss", oppRating: 1734, color: "white", delta: 12, mode: "Blitz 3+2", opening: "Italian Game", eco: "C50", moves: 31, date: "8h ago", termination: "resign" },
-  { id: "g5", result: "D", opponent: "endgame_eli", oppRating: 1844, color: "black", delta: 2, mode: "Rapid 15+10", opening: "Queens Gambit Declined", eco: "D37", moves: 64, date: "Yesterday", termination: "repetition" },
-  { id: "g6", result: "W", opponent: "tactical_tim", oppRating: 1780, color: "black", delta: 19, mode: "Bullet 1+0", opening: "Pirc Defense", eco: "B07", moves: 28, date: "Yesterday", termination: "resign" },
-  { id: "g7", result: "L", opponent: "deepblue_jr", oppRating: 1902, color: "white", delta: -18, mode: "Rapid 10+0", opening: "Kings Indian", eco: "E90", moves: 41, date: "2d ago", termination: "checkmate" },
-  { id: "g8", result: "W", opponent: "pawnpusher", oppRating: 1764, color: "white", delta: 14, mode: "Blitz 5+0", opening: "London System", eco: "D02", moves: 36, date: "2d ago", termination: "resign" },
-];
-
-const resultColor: Record<GameRow["result"], string> = {
+const resultColor: Record<Game["result"], string> = {
   W: "text-primary bg-primary/10 border-primary/30",
   L: "text-negative bg-negative/10 border-negative/30",
   D: "text-muted-foreground bg-muted border-border",
 };
 
+function formatAgo(unix: number) {
+  const diff = Math.floor(Date.now() / 1000 - unix);
+  if (diff < 60) return "just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+  if (diff < 86400 * 7) return `${Math.floor(diff / 86400)}d ago`;
+  return new Date(unix * 1000).toLocaleDateString();
+}
+
+function formatMode(g: Game): string {
+  const tc = g.timeControl;
+  // chess.com formats: "600", "180+2", "1/86400" (daily)
+  if (g.timeClass === "daily") return "Daily";
+  if (tc.includes("/")) return "Daily";
+  if (tc.includes("+")) {
+    const [base, inc] = tc.split("+");
+    return `${g.timeClass[0].toUpperCase() + g.timeClass.slice(1)} ${Math.round(Number(base) / 60)}+${inc}`;
+  }
+  return `${g.timeClass[0].toUpperCase() + g.timeClass.slice(1)} ${Math.round(Number(tc) / 60)}+0`;
+}
+
 interface Props {
-  rows?: GameRow[];
+  rows?: Game[];
+  limit?: number;
   showTitle?: boolean;
   dense?: boolean;
 }
 
-export function RecentGamesTable({
-  rows = SAMPLE_GAMES,
-  showTitle = true,
-  dense = false,
-}: Props) {
+export function RecentGamesTable({ rows, limit = 8, showTitle = true, dense = false }: Props) {
+  const { analytics } = useChessData();
+  const data = (rows ?? analytics.games).slice(0, limit);
+
+  if (data.length === 0) {
+    return (
+      <section className={cn(!dense && "panel p-5")}>
+        <div className="text-xs font-mono text-muted-foreground py-8 text-center">
+          No games imported yet.
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className={cn(!dense && "panel p-5")}>
       {showTitle && (
         <div className="flex items-baseline justify-between mb-4">
           <div>
-            <h2 className="text-sm font-semibold tracking-tight">
-              Recent Games
-            </h2>
+            <h2 className="text-sm font-semibold tracking-tight">Recent Games</h2>
             <p className="text-[11px] font-mono text-muted-foreground mt-0.5">
-              last {rows.length} games · click any row to review
+              last {data.length} games · click to open on chess.com
             </p>
           </div>
-          <button className="text-[10px] font-mono uppercase tracking-widest text-primary hover:underline flex items-center gap-1">
+          <a
+            href={`https://www.chess.com/games/archive/${analytics.profile.username}`}
+            target="_blank"
+            rel="noreferrer"
+            className="text-[10px] font-mono uppercase tracking-widest text-primary hover:underline flex items-center gap-1"
+          >
             View all <ArrowUpRight className="h-3 w-3" />
-          </button>
+          </a>
         </div>
       )}
 
@@ -69,7 +79,6 @@ export function RecentGamesTable({
               <th className="text-left font-normal py-2 pr-3">Result</th>
               <th className="text-left font-normal py-2 pr-3">Opponent</th>
               <th className="text-center font-normal py-2 px-2">Color</th>
-              <th className="text-right font-normal py-2 px-2">Δ</th>
               <th className="text-left font-normal py-2 px-2 hidden md:table-cell">Mode</th>
               <th className="text-left font-normal py-2 px-2 hidden lg:table-cell">Opening</th>
               <th className="text-right font-normal py-2 px-2 hidden sm:table-cell">Moves</th>
@@ -77,9 +86,10 @@ export function RecentGamesTable({
             </tr>
           </thead>
           <tbody className="font-mono">
-            {rows.map((g) => (
+            {data.map((g) => (
               <tr
                 key={g.id}
+                onClick={() => window.open(g.url, "_blank", "noopener")}
                 className="border-b border-border/60 hover:bg-panel-elevated/60 cursor-pointer transition-colors group"
               >
                 <td className="py-2.5 pr-3">
@@ -93,13 +103,13 @@ export function RecentGamesTable({
                   </span>
                 </td>
                 <td className="py-2.5 pr-3">
-                  <div className="flex items-center gap-2">
-                    <div className="h-6 w-6 rounded bg-gradient-to-br from-panel-elevated to-panel border border-border grid place-items-center text-[10px] text-muted-foreground">
-                      {g.opponent[0].toUpperCase()}
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="h-6 w-6 rounded bg-gradient-to-br from-panel-elevated to-panel border border-border grid place-items-center text-[10px] text-muted-foreground shrink-0">
+                      {g.opponent[0]?.toUpperCase() ?? "?"}
                     </div>
                     <div className="min-w-0">
                       <div className="text-foreground text-xs truncate">{g.opponent}</div>
-                      <div className="text-[10px] text-muted-foreground">{g.oppRating}</div>
+                      <div className="text-[10px] text-muted-foreground">{g.opponentRating || "—"}</div>
                     </div>
                   </div>
                 </td>
@@ -107,38 +117,27 @@ export function RecentGamesTable({
                   <Circle
                     className={cn(
                       "inline h-3 w-3",
-                      g.color === "white"
+                      g.playerColor === "white"
                         ? "fill-foreground text-foreground"
                         : "fill-background text-foreground",
                     )}
                   />
                 </td>
-                <td
-                  className={cn(
-                    "py-2.5 px-2 text-right tabular text-xs",
-                    g.delta > 0
-                      ? "text-primary"
-                      : g.delta < 0
-                        ? "text-negative"
-                        : "text-muted-foreground",
-                  )}
-                >
-                  {g.delta > 0 ? "+" : ""}
-                  {g.delta}
-                </td>
                 <td className="py-2.5 px-2 hidden md:table-cell text-xs text-muted-foreground">
-                  {g.mode}
+                  {formatMode(g)}
                 </td>
                 <td className="py-2.5 px-2 hidden lg:table-cell text-xs">
-                  <span className="text-foreground">{g.opening}</span>
-                  <span className="text-muted-foreground ml-1.5">{g.eco}</span>
+                  <span className="text-foreground truncate inline-block max-w-[200px] align-middle">
+                    {g.opening}
+                  </span>
+                  {g.eco && <span className="text-muted-foreground ml-1.5">{g.eco}</span>}
                 </td>
                 <td className="py-2.5 px-2 hidden sm:table-cell text-right text-xs text-muted-foreground tabular">
-                  {g.moves}
+                  {g.moves || "—"}
                 </td>
                 <td className="py-2.5 pl-2 text-right text-xs text-muted-foreground">
                   <span className="inline-flex items-center gap-1 group-hover:text-primary transition-colors">
-                    {g.date}
+                    {formatAgo(g.endTime)}
                     <ExternalLink className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                   </span>
                 </td>
