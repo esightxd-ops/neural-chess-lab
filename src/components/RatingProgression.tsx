@@ -10,49 +10,49 @@ import {
   ReferenceDot,
 } from "recharts";
 import { cn } from "@/lib/utils";
+import { useChessData } from "@/lib/chess/store";
+import type { TimeClass } from "@/lib/chess/types";
 
-const MODES = ["Rapid", "Blitz", "Bullet", "Daily"] as const;
+const MODE_KEYS: TimeClass[] = ["rapid", "blitz", "bullet", "daily"];
 const RANGES = ["7d", "30d", "90d", "1y", "all"] as const;
-
-type Mode = (typeof MODES)[number];
 type Range = (typeof RANGES)[number];
 
-const baseByMode: Record<Mode, number> = {
-  Rapid: 1842,
-  Blitz: 1756,
-  Bullet: 1612,
-  Daily: 1924,
+const rangeSeconds: Record<Range, number> = {
+  "7d": 7 * 86400,
+  "30d": 30 * 86400,
+  "90d": 90 * 86400,
+  "1y": 365 * 86400,
+  all: Number.POSITIVE_INFINITY,
 };
-
-const rangePoints: Record<Range, number> = {
-  "7d": 14,
-  "30d": 30,
-  "90d": 60,
-  "1y": 90,
-  all: 140,
-};
-
-function gen(mode: Mode, range: Range) {
-  const points = rangePoints[range];
-  const end = baseByMode[mode];
-  const start = end - (range === "all" ? 320 : range === "1y" ? 180 : range === "90d" ? 110 : range === "30d" ? 70 : 28);
-  return Array.from({ length: points }, (_, i) => {
-    const t = i / (points - 1);
-    const base = start + (end - start) * t;
-    const noise = Math.sin(i / 2.4) * 18 + Math.cos(i / 1.5) * 8 + (i % 3) * 4;
-    return { d: i, rating: Math.round(base + noise) };
-  });
-}
 
 interface Props {
   className?: string;
-  defaultMode?: Mode;
 }
 
-export function RatingProgression({ className, defaultMode = "Rapid" }: Props) {
-  const [mode, setMode] = useState<Mode>(defaultMode);
-  const [range, setRange] = useState<Range>("30d");
-  const data = useMemo(() => gen(mode, range), [mode, range]);
+export function RatingProgression({ className }: Props) {
+  const { analytics } = useChessData();
+  const { ratingHistory, summary, byTimeClass } = analytics;
+  const available = MODE_KEYS.filter((m) => byTimeClass[m]);
+  const [mode, setMode] = useState<TimeClass>(summary.primaryTimeClass);
+  const [range, setRange] = useState<Range>("90d");
+
+  const data = useMemo(() => {
+    const now = Math.floor(Date.now() / 1000);
+    return ratingHistory
+      .filter((h) => h.timeClass === mode && now - h.t <= rangeSeconds[range])
+      .map((h, i) => ({ d: i, t: h.t, rating: h.rating }));
+  }, [ratingHistory, mode, range]);
+
+  if (data.length < 2) {
+    return (
+      <section className={cn("panel p-5", className)}>
+        <h2 className="text-sm font-semibold tracking-tight">Rating Progression</h2>
+        <div className="h-[200px] grid place-items-center text-xs font-mono text-muted-foreground">
+          Not enough {mode} games in this range to plot a curve.
+        </div>
+      </section>
+    );
+  }
 
   const max = data.reduce((a, b) => (b.rating > a.rating ? b : a));
   const min = data.reduce((a, b) => (b.rating < a.rating ? b : a));
@@ -65,17 +65,13 @@ export function RatingProgression({ className, defaultMode = "Rapid" }: Props) {
       <div className="flex flex-wrap items-baseline justify-between gap-3">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold tracking-tight">
-              Rating Progression
-            </h2>
+            <h2 className="text-sm font-semibold tracking-tight">Rating Progression</h2>
             <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
               {mode} · {range}
             </span>
           </div>
           <div className="mt-1.5 flex items-baseline gap-3">
-            <span className="font-mono text-3xl font-semibold tabular">
-              {current.rating}
-            </span>
+            <span className="font-mono text-3xl font-semibold tabular">{current.rating}</span>
             <span
               className={cn(
                 "font-mono text-sm font-semibold",
@@ -93,7 +89,7 @@ export function RatingProgression({ className, defaultMode = "Rapid" }: Props) {
 
         <div className="flex flex-col items-end gap-2">
           <div className="flex gap-1 panel-elevated p-0.5">
-            {MODES.map((m) => (
+            {(available.length ? available : MODE_KEYS).map((m) => (
               <button
                 key={m}
                 onClick={() => setMode(m)}
@@ -115,9 +111,7 @@ export function RatingProgression({ className, defaultMode = "Rapid" }: Props) {
                 onClick={() => setRange(r)}
                 className={cn(
                   "px-2 h-6 rounded text-[10px] font-mono uppercase tracking-widest transition-colors",
-                  range === r
-                    ? "bg-secondary text-foreground"
-                    : "text-muted-foreground hover:text-foreground",
+                  range === r ? "bg-secondary text-foreground" : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 {r}
@@ -158,7 +152,10 @@ export function RatingProgression({ className, defaultMode = "Rapid" }: Props) {
                 fontSize: 12,
                 fontFamily: "var(--font-mono)",
               }}
-              labelStyle={{ color: "var(--color-muted-foreground)" }}
+              labelFormatter={(_v, payload) => {
+                const t = payload?.[0]?.payload?.t;
+                return t ? new Date(t * 1000).toLocaleDateString() : "";
+              }}
               cursor={{ stroke: "var(--color-primary)", strokeOpacity: 0.4 }}
             />
             <Line
@@ -192,13 +189,6 @@ export function RatingProgression({ className, defaultMode = "Rapid" }: Props) {
               fill="var(--color-negative)"
               stroke="var(--color-background)"
               strokeWidth={2}
-              label={{
-                value: `low ${min.rating}`,
-                position: "bottom",
-                fill: "var(--color-negative)",
-                fontSize: 10,
-                fontFamily: "var(--font-mono)",
-              }}
             />
             <ReferenceDot
               x={current.d}
