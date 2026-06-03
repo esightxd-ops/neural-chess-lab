@@ -10,7 +10,7 @@ import {
 import { cn } from "@/lib/utils";
 import type { LucideIcon } from "lucide-react";
 
-interface Record {
+interface RecordItem {
   label: string;
   value: string;
   sub?: string;
@@ -18,7 +18,7 @@ interface Record {
   accent: "primary" | "blue" | "gold" | "negative";
 }
 
-const records: Record[] = [
+const records: RecordItem[] = [
   { label: "Current win streak", value: "12", sub: "ongoing", icon: Flame, accent: "primary" },
   { label: "Longest win streak", value: "18", sub: "Apr 14, 2024", icon: Trophy, accent: "gold" },
   { label: "Longest unbeaten", value: "27", sub: "Mar – Apr 2024", icon: ShieldCheck, accent: "primary" },
@@ -31,7 +31,7 @@ const records: Record[] = [
   { label: "Shortest win", value: "11 moves", sub: "vs rookieboss", icon: Zap, accent: "primary" },
 ];
 
-const accentMap: Record<string, string> = {
+const accentMap: Partial<globalThis.Record<string, string>> = {
   primary: "text-primary bg-primary/10 border-primary/30",
   blue: "text-accent-blue bg-accent-blue/10 border-accent-blue/30",
   gold: "text-gold bg-gold/10 border-gold/30",
