@@ -4,7 +4,7 @@ Chesslab is a Leetify-style competitive analytics dashboard for **Chess.com** pl
 
 ## What it does
 
-- Fetches a player's public profile, stats, and the last 3 months of game archives from the Chess.com public API via a server-side `createServerFn` (avoids browser CORS and sets a polite `User-Agent`).
+- Fetches a player's public profile, stats, and the latest **6 months** of game archives (capped at **400 games**) from the Chess.com public API via a server-side `createServerFn` (avoids browser CORS and sets a polite `User-Agent`).
 - Normalizes raw PGN data into typed `Game`, `RatingSnapshot`, `OpeningStats`, `OpponentStats`, `ColorStats`, `StreakStats`, and `TimeControlStats`.
 - Computes win rate, current/longest streaks, opening repertoire, frequent opponents, color performance, rating progression curves, and trophy-room records — all client-side from the imported games.
 - Falls back to a deterministic mock dataset on first load so the layout is never empty.
