@@ -20,10 +20,14 @@ interface State {
   isLoading: boolean;
   error: string | null;
   fetchedAt: number | null;
-  importProfile: (username: string) => Promise<void>;
-  refresh: () => Promise<void>;
+  importProfile: (username: string) => Promise<ImportResult>;
+  refresh: () => Promise<ImportResult>;
   clear: () => void;
 }
+
+export type ImportResult =
+  | { ok: true; username: string }
+  | { ok: false; error: string };
 
 const ChessContext = createContext<State | null>(null);
 const STORAGE_KEY = "chesslab.username";
@@ -60,24 +64,25 @@ export function ChessDataProvider({ children }: { children: ReactNode }) {
   const lastReqId = useRef(0);
 
   const runImport = useCallback(
-    async (name: string) => {
+    async (name: string): Promise<ImportResult> => {
       const trimmed = name.trim();
-      if (!trimmed) return;
+      if (!trimmed) return { ok: false, error: "Username is required" };
       const reqId = ++lastReqId.current;
       setIsLoading(true);
       setError(null);
       try {
         const data = await importFn({ data: { username: trimmed } });
-        if (reqId !== lastReqId.current) return;
+        if (reqId !== lastReqId.current) return { ok: false, error: "Superseded" };
         setAnalytics(data);
         setIsMock(false);
         setUsername(data.profile.username);
         setFetchedAt(data.fetchedAt);
         writeStoredUsername(data.profile.username);
+        return { ok: true, username: data.profile.username };
       } catch (e) {
-        if (reqId !== lastReqId.current) return;
         const msg = e instanceof Error ? e.message : "Failed to import profile";
-        setError(msg);
+        if (reqId === lastReqId.current) setError(msg);
+        return { ok: false, error: msg };
       } finally {
         if (reqId === lastReqId.current) setIsLoading(false);
       }
@@ -85,9 +90,9 @@ export function ChessDataProvider({ children }: { children: ReactNode }) {
     [importFn],
   );
 
-  const refresh = useCallback(async () => {
-    if (!username) return;
-    await runImport(username);
+  const refresh = useCallback(async (): Promise<ImportResult> => {
+    if (!username) return { ok: false, error: "No username imported yet" };
+    return runImport(username);
   }, [username, runImport]);
 
   const clear = useCallback(() => {

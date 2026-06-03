@@ -39,8 +39,10 @@ export function TopBar({ section, crumb }: Props) {
     if (!val) return;
     setInput("");
     const id = toast.loading(`Importing ${val}…`);
-    await importProfile(val);
+    const result = await importProfile(val);
     toast.dismiss(id);
+    if (result.ok) toast.success(`Imported ${result.username}`);
+    else toast.error(result.error);
   };
 
   return (
@@ -140,13 +142,16 @@ export function TopBar({ section, crumb }: Props) {
                 ? `Sync ${username} from chess.com`
                 : "Sync (enter a username first)"
           }
-          onClick={() => {
-            if (username) {
-              void refresh();
-              toast.message(`Refreshing ${username}…`);
-            } else {
+          onClick={async () => {
+            if (!username) {
               toast.message("Enter a Chess.com username first");
+              return;
             }
+            const id = toast.loading(`Refreshing ${username}…`);
+            const result = await refresh();
+            toast.dismiss(id);
+            if (result.ok) toast.success(`Synced ${result.username}`);
+            else toast.error(result.error);
           }}
           disabled={isLoading}
           className={cn(
