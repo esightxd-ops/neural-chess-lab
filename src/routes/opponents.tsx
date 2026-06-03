@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { cn } from "@/lib/utils";
-import { useChessData } from "@/lib/chess/store";
+import { useChessData } from "@/lib/chess/store-context";
 
 export const Route = createFileRoute("/opponents")({
   head: () => ({ meta: [{ title: "Opponents — Chesslab" }] }),

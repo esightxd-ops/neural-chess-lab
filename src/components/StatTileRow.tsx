@@ -1,5 +1,5 @@
 import { StatTile } from "./StatTile";
-import { useChessData } from "@/lib/chess/store";
+import { useChessData } from "@/lib/chess/store-context";
 import type { TimeClass } from "@/lib/chess/types";
 
 const ACCENT: Record<TimeClass, "primary" | "blue"> = {

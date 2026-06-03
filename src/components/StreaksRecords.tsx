@@ -1,7 +1,7 @@
 import { Flame, Trophy, TrendingUp, Clock, Zap, ShieldCheck, CalendarHeart, Star } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useChessData } from "@/lib/chess/store";
+import { useChessData } from "@/lib/chess/store-context";
 
 const KIND_ICON: Record<string, LucideIcon> = {
   streak: Flame,

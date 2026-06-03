@@ -1,6 +1,6 @@
 import { TrendingUp, TrendingDown, Flame, Calendar, Globe2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useChessData } from "@/lib/chess/store";
+import { useChessData } from "@/lib/chess/store-context";
 import type { TimeClass } from "@/lib/chess/types";
 
 const TC_LABEL: Record<TimeClass, string> = {

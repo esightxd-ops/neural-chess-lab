@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/AppShell";
 import { TimeControlGrid } from "@/components/TimeControlGrid";
-import { useChessData } from "@/lib/chess/store";
+import { useChessData } from "@/lib/chess/store-context";
 import { cn } from "@/lib/utils";
 import type { TimeClass } from "@/lib/chess/types";
 

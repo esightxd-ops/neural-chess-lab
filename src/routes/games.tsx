@@ -3,7 +3,7 @@ import { useMemo, useState } from "react";
 import { AppShell } from "@/components/AppShell";
 import { RecentGamesTable } from "@/components/RecentGamesTable";
 import { ChevronDown, Filter } from "lucide-react";
-import { useChessData } from "@/lib/chess/store";
+import { useChessData } from "@/lib/chess/store-context";
 import type { Game, TimeClass } from "@/lib/chess/types";
 import { cn } from "@/lib/utils";
 

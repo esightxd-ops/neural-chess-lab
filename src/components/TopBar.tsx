@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { RefreshCw, Search, X, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
-import { useChessData } from "@/lib/chess/store";
+import { useChessData } from "@/lib/chess/store-context";
 import { cn } from "@/lib/utils";
 
 interface Props {

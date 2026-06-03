@@ -10,7 +10,7 @@ import {
   ReferenceDot,
 } from "recharts";
 import { cn } from "@/lib/utils";
-import { useChessData } from "@/lib/chess/store";
+import { useChessData } from "@/lib/chess/store-context";
 import type { TimeClass } from "@/lib/chess/types";
 
 const MODE_KEYS: TimeClass[] = ["rapid", "blitz", "bullet", "daily"];
