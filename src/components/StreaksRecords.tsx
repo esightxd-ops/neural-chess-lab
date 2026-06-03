@@ -92,6 +92,3 @@ export function StreaksRecords({ title = "Streaks & Records", compact = false }:
     </section>
   );
 }
-
-// Re-export for legacy import paths
-export { ShieldCheck };
