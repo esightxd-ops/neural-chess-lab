@@ -29,9 +29,8 @@ export function TopBar({ section, crumb }: Props) {
     return () => window.clearInterval(id);
   }, []);
 
-  useEffect(() => {
-    if (error) toast.error(error);
-  }, [error]);
+  // Note: error toasts are surfaced from the submit/refresh handlers below to
+  // avoid duplicate toasts. The visible `error` state still drives inline UI.
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();

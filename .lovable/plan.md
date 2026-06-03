@@ -1,102 +1,113 @@
-# Phase 2 — API Integration Hardening
+# Phase 3 — Reliability, Caching & Tests
 
-Eight focused passes over the existing Chess.com integration. No UI redesign, no new state library, no new framework. All work stays inside `src/lib/chess/*` plus one test file and a small provider tweak.
+Eight focused passes. No UI redesign. All edits stay inside `src/lib/chess/*`, `src/components/TopBar.tsx`, `README.md`, and tests.
 
 ---
 
-## 1. Fetch reliability (`chess.functions.ts`)
+## 1. Server-side cache + in-flight dedupe (`chess.functions.ts`)
 
-Add an internal `cdcFetch` helper:
+Add module-level state inside the server fn module (lives on the Worker per isolate):
 
-- `AbortController` with 10s timeout per request.
-- Retry with exponential backoff (e.g. 300ms → 800ms → 1800ms, max 3 attempts) ONLY for: network/abort errors, HTTP 408, 429, and 5xx.
-- Never retry 400 / 403 / 404 — throw immediately so the existing 404 → "user not found" branch keeps working.
-- Honor `Retry-After` header when present on 429.
-- Keep `createServerFn`, Zod schemas, `MAX_MONTHS = 6`, `MAX_GAMES = 400` unchanged.
+- `serverCache: Map<string, { data: ChessAnalytics; at: number }>` — TTL 5 min.
+- `inFlight: Map<string, Promise<ChessAnalytics>>` — same-username concurrent calls share one promise.
+- Bounded size (e.g. 50 entries) with simple FIFO eviction on insert.
+- Key = `username.toLowerCase()`.
+- Flow in handler: check cache → if fresh, return clone. Else check `inFlight` → if present, await it. Else create promise, store in `inFlight`, resolve, write cache, delete from `inFlight` in `finally`.
+- Client cache in `store.tsx` stays as-is.
 
-## 2. Partial-import warnings
+## 2. Fetch reliability polish (`cdcFetch`)
 
-Today, archive months that fail to fetch silently become `{ games: [] }`. Surface this:
+Keep the existing 3-attempt, 10s timeout shape. Refine:
 
-- Extend `ChessAnalytics` (in `types.ts`) with an optional `meta` field:
-  ```ts
-  meta?: {
-    importedArchiveMonths: number;
-    failedArchiveMonths: number;
-    skippedInvalidGames: number;
-  }
-  ```
-- `importChessProfile` counts failed months and Zod-rejected games and returns them in `meta`.
-- `ChessDataProvider` reads `meta` after a successful import. If `failedArchiveMonths > 0` or `skippedInvalidGames > 0`, show a small `toast.warning` ("Imported with N month(s) skipped") — no layout change.
-- Import is still considered successful as long as profile + stats resolved and ≥0 games loaded.
+- `parseRetryAfter(h)`: if numeric → seconds; else `Date.parse` → ms-from-now; clamp to [0, 30000]; ignore NaN.
+- Add jitter: `delay = base * (0.8 + Math.random() * 0.4)` on each retry.
+- Distinguish errors: tag thrown `AbortError` as `TimeoutError` (own class or `error.name === "TimeoutError"`); separate generic network failure message.
+- Explicit early-return on 400/403/404 already exists via `!isTransientStatus` — assert/document it; ensure those statuses never re-enter the retry branch.
+- 404/429 messages in handler unchanged. Add a `408/timeout → "Chess.com request timed out"` mapping.
 
-## 3. In-memory profile cache (`store.tsx`)
+## 3. Concurrency-limited archive fetch
 
-- Add a module-level `Map<string, { data: ChessAnalytics; at: number }>` keyed by lowercased username.
-- TTL = 5 minutes.
-- `importProfile(name)` checks cache first and short-circuits with cached analytics (sets loading false immediately, no toast change).
-- `refresh()` always bypasses cache and re-fetches, then writes the fresh result back into the cache.
-- `localStorage` continues to store only the last username string. No analytics persisted to storage.
+Replace `Promise.all(recent.map(...))` with a small worker pool, `CONCURRENCY = 2`:
 
-## 4. Rate-limit protection
+- Tiny inline runner (no dep): index counter + `Promise.all([worker(), worker()])`, each worker pulls next URL until exhausted.
+- Preserve order via index → results array.
+- Failed months still counted into `failedArchiveMonths`; partial-import meta unchanged.
+- Caps (`MAX_MONTHS=6`, `MAX_GAMES=400`) unchanged.
 
-- Provider: ignore `importProfile` calls while `isLoading` is true (already partly true via `lastReqId`; make it explicit and return `{ ok:false, error:"Import already in progress" }`).
-- Per-username cooldown: 10s between non-sync imports for the same username. `refresh()` is exempt.
-- Server function: when the upstream Chess.com response is 429, throw a normalized error message: `"Chess.com rate limit reached. Try again in a minute."` so the existing toast surfaces it verbatim.
+## 4. Canonical import-result type (`types.ts` + `store-context.ts`)
 
-## 5. Tighten types at the boundary
+`types.ts` currently exports stale `ImportResult` / `ImportError` / `ImportResponse` that conflict with `store-context.ts`'s `ImportResult` (`{ ok; username?; error? }`).
 
-- In `analytics.ts`, export a `RawStats` shape that mirrors the Zod schema exactly (`last?.rating`, `best?.rating` per bucket).
-- Adjust `StatsSchema` so `z.infer<typeof StatsSchema>` is assignable to `RawStats` without a cast.
-- Remove the `as RawStats` cast in `chess.functions.ts`.
-- Domain types in `types.ts` stay unchanged (UI source of truth).
+- Delete the three stale exports from `types.ts`.
+- Move the canonical `ImportResult` definition into `types.ts` (single source of truth) and re-export from `store-context.ts` for back-compat, OR keep in `store-context.ts` and just remove the dead exports. Pick the simpler option after re-reading both files; no behavior change.
+- Verify no other file imports the stale names (`rg "ImportResponse|ImportError"`).
 
-## 6. Auto-restore loading clarity (`store.tsx` + `TopBar.tsx`)
+## 5. Single-toast error UX (`store.tsx` + `TopBar.tsx`)
 
-- On mount, when a stored username exists, set `isLoading = true` before calling `runImport`, keep `isMock = true`, and keep mock analytics on screen.
-- `TopBar` status pill: when `isLoading && isMock`, show `importing…` (or `syncing…` if a previous username is known) instead of `demo data`. Tiny string change only; no layout edits.
-- If auto-restore fails: keep the mock dashboard, surface the error toast (already wired), and clear stored username only on validation errors (invalid username / 404), not on transient network errors — so a reload later can retry.
+Today, both the provider (implicit via `error` state surfaced elsewhere?) and `TopBar` can toast. Audit and normalize:
 
-## 7. Smoke test
+- Provider's `runImport` returns `{ ok:false, error }` and sets `setError(msg)` but does NOT toast.
+- `TopBar` is the single toast site: on submit/sync, show one `toast.error` from the returned `error`. On success, one `toast.success`. On warning (partial meta) the provider's existing `toast.warning` stays — that's distinct.
+- Auto-restore on mount: do NOT toast on failure (silent; mock dashboard stays, `error` state set). Avoids surprise toast on page load.
+- Keep visible `error` state for any inline display.
 
-Project has no test runner today, so add the lightest practical option:
+## 6. Persisted analytics snapshot (`store.tsx`)
 
-- Add `bun test` script + a single `src/lib/chess/__tests__/chess.test.ts` using `bun:test` (zero deps).
-- Cases:
-  1. Username validator rejects `""`, `"a"`, `"has space"`, and `"toolong……"`.
-  2. Mocked 404 → server fn throws `Chess.com user "X" not found`.
-  3. Happy-path: feed canned profile/stats/archive JSON through `normalizeProfile`, `normalizeGame`, `buildAnalytics`; assert non-empty summary + correct totals.
-  4. Cap enforcement: feed 12 archive URLs + 1000 games; assert ≤ 6 months fetched and ≤ 400 games in result.
-- Mock `fetch` via `globalThis.fetch = ...` inside the test; no network.
+Extend localStorage beyond just username:
 
-## 8. Server/client boundary audit
+- New key `chesslab.snapshot.v1` storing `{ version: 1, username, fetchedAt, analytics }`.
+- `SNAPSHOT_TTL_MS = 30 * 60 * 1000` (30 min); older snapshots ignored but username key still used to trigger background refresh.
+- On mount: if fresh snapshot exists → `applyAnalytics(snapshot.analytics)` immediately, skip auto-`runImport`; user can hit Sync to refresh.
+- If snapshot stale but username present → current behavior (auto-import with `importing…` pill).
+- On every successful import (in `applyAnalytics`), write snapshot.
+- On `clear()` and on terminal error, delete snapshot.
+- Guard JSON parse + version mismatch (drop silently).
+- First-time users: no snapshot, no username → mock fallback unchanged.
 
-Quick read-only sweep, fix only if leaks exist:
+## 7. Phase 2/3 test expansion (`__tests__/chess.test.ts` + new files)
 
-- `rg` for `api.chess.com` and `fetch(` outside `src/lib/chess/chess.functions.ts`.
-- Confirm components import from `@/lib/chess/store-context` (data) or `chess.functions` only via the provider (not directly).
-- External `chess.com` links in `RecentGamesTable` / `ProfileHero` are fine — they're hrefs, not fetches.
-- Report findings; only patch genuine leaks.
+Use existing `bun:test`. Add cases (mock `globalThis.fetch`):
+
+- Username validator (already covered).
+- Archive cap: 12 archive URLs → only 6 fetched; 1000 normalized games → trimmed to 400.
+- Invalid game schema → counted in `skippedInvalidGames`, not thrown.
+- Partial month failure: one archive month returns 500 thrice → `failedArchiveMonths === 1`, import still succeeds.
+- Retry: 429 then 200 → succeeds, fetch called twice. 5xx then 200 → succeeds.
+- No retry on 404 → fetch called once, error message contains `not found`.
+- Server cache: two sequential calls with same username → second served from cache (fetch call count unchanged).
+- In-flight dedupe: two concurrent calls → one underlying fetch burst.
+- Client cooldown (separate file or section, no React): extract cooldown logic into a tiny pure helper if testing the provider is too heavy; otherwise skip and note in PR.
+
+Keep tests fast (<1s); no React rendering required for server-fn-level tests since they call the handler module directly.
+
+## 8. Boundary guard + README note
+
+- `rg "api\.chess\.com"` and `rg "fetch\("` across `src/` excluding `chess.functions.ts` and tests. Expect zero hits in components/routes.
+- If any found, route through `useChessData().importProfile` / `refresh`.
+- README: add one short paragraph under existing architecture section: "Chess.com API access is server-only (`chess.functions.ts`) to avoid CORS, custom User-Agent restrictions, and rate-limit leakage to the client."
 
 ---
 
 ## Technical notes
 
-- All retry/timeout/cache constants live as named consts at the top of their files so they're easy to tune.
-- No new dependencies. `bun:test` is built-in.
-- `routeTree.gen.ts` is auto-generated; not touched.
-- Files touched:
-  - `src/lib/chess/chess.functions.ts` (passes 1, 2, 4, 5)
-  - `src/lib/chess/analytics.ts` (pass 5, minor)
-  - `src/lib/chess/types.ts` (pass 2, add optional `meta`)
-  - `src/lib/chess/store.tsx` (passes 2, 3, 4, 6)
-  - `src/components/TopBar.tsx` (pass 6, string only)
-  - `src/lib/chess/__tests__/chess.test.ts` (pass 7, new)
-  - `package.json` (pass 7, add `"test": "bun test"`)
+- All constants (`SERVER_CACHE_TTL_MS`, `SERVER_CACHE_MAX`, `CONCURRENCY`, `SNAPSHOT_TTL_MS`, `SNAPSHOT_KEY`) defined as named consts at top of file.
+- No new dependencies. `bun:test` already wired.
+- Worker isolates are per-region/instance, so server cache is best-effort — that's acceptable (5 min TTL).
+- Snapshot payload is bounded by `MAX_GAMES=400`; well under localStorage limits.
+
+## Files touched
+
+- `src/lib/chess/chess.functions.ts` (passes 1, 2, 3)
+- `src/lib/chess/types.ts` (pass 4)
+- `src/lib/chess/store-context.ts` (pass 4, possibly)
+- `src/lib/chess/store.tsx` (passes 5, 6)
+- `src/components/TopBar.tsx` (pass 5)
+- `src/lib/chess/__tests__/chess.test.ts` (pass 7) + possibly `chess.server-cache.test.ts`
+- `README.md` (pass 8)
 
 ## Out of scope
 
-- No UI redesign, no new components, no route changes.
-- No new state library, no React Query introduction.
-- No persistence of analytics to localStorage/IndexedDB.
-- No queue/background-job infrastructure.
+- No UI redesign, no new routes, no new state library.
+- No IndexedDB / SW caching.
+- No cross-isolate shared cache (KV/D1).
+- No new test framework or rendering library.

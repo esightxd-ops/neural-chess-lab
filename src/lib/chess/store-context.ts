@@ -1,7 +1,7 @@
 import { createContext, useContext } from "react";
-import type { ChessAnalytics } from "./types";
+import type { ChessAnalytics, ImportResult } from "./types";
 
-export type ImportResult = { ok: true; username: string } | { ok: false; error: string };
+export type { ImportResult } from "./types";
 
 export interface ChessDataState {
   analytics: ChessAnalytics;

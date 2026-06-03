@@ -27,7 +27,7 @@ Before you import anyone, the UI runs on the built-in demo dataset.
 | `src/lib/chess/analytics.ts`       | Pure functions that turn raw archive games into computed analytics.                                                                                                               |
 | `src/lib/chess/mock.ts`            | Deterministic demo dataset used as the initial fallback.                                                                                                                          |
 | `src/lib/chess/store-context.ts`   | React context + `useChessData()` hook + shared types.                                                                                                                             |
-| `src/lib/chess/store.tsx`          | `ChessDataProvider` component. Handles loading/error states, `localStorage` persistence, and auto-restore on mount.                                                               |
+| `src/lib/chess/store.tsx`          | `ChessDataProvider` component. Handles loading/error states, `localStorage` persistence (username + last successful analytics snapshot), and auto-restore on mount.               |
 | `src/components/*`                 | Dashboard panels — consume `useChessData()` unless explicitly passed props (e.g. `RecentGamesTable` receives `rows`/`profileUsername`).                                           |
 | `src/routes/*`                     | Overview, Games, Ratings, Openings, Time Controls, Opponents, Streaks, Records, Settings.                                                                                         |
 
@@ -52,6 +52,14 @@ TopBar ──► ChessDataProvider ──► useServerFn(importChessProfile)
             RatingProgression.tsx    OpeningTable.tsx         TimeControlGrid.tsx
             StreaksRecords.tsx       ColorPerformance.tsx     OpponentsTable.tsx
 ```
+
+## Server-only Chess.com access
+
+All Chess.com API calls live in `src/lib/chess/chess.functions.ts` behind a
+`createServerFn` boundary. Components and routes never call `api.chess.com`
+directly — that would trigger browser CORS rejections, prevent the polite
+`User-Agent` header, and leak rate-limit pressure to every visitor. To fetch
+or refresh data, go through `useChessData().importProfile` / `refresh`.
 
 ## Stack
 
